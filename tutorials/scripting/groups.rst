@@ -21,51 +21,56 @@ removed by removing all nodes from a given group.
 
 There are two ways to add/remove nodes to groups:
 
-- During design, by using the Node dock in the editor.
+- During design, by using the Groups dock in the editor, or the Groups tab in the Globals dock in project settings.
 - During execution, by calling :ref:`Node.add_to_group() <class_Node_method_add_to_group>`
   or :ref:`Node.remove_from_group() <class_Node_method_remove_from_group>`.
 
+.. tip::
 
-Using the Node dock
-~~~~~~~~~~~~~~~~~~~
+    While not strictly required, it's recommended to use the ``snake_case`` naming
+    convention for group names.
 
-You can add nodes in the current scene to groups using the Groups tab in the
-Node dock.
+Using the Groups dock
+~~~~~~~~~~~~~~~~~~~~~
 
-.. image:: img/groups_node_tab.webp
+You can create new groups using the Groups dock.
 
-Select one or more nodes in the Scene dock and write the group name in the
-field, then click Add.
+.. image:: img/groups_dock.webp
 
-.. image:: img/groups_add_node_to_group.webp
+Select a node in the Scene dock then click the add button with the + symbol.
 
-You should now see the group appear.
+.. image:: img/groups_add_new_group_button.webp
 
-.. image:: img/groups_node_after_adding.webp
+You should now see the Create New Group modal appear. Write the group name in the field.
 
-In a complex project, you may end up with many groups or large scenes with many
-nodes. You can add or remove any node to groups using the Group Editor window.
-To access it, click the Manage Groups button.
+You can optionally mark the option "Global", which will make the group visible project-wide,
+and able to be reused in any project scene. This will also allow you to give it a description.
 
-.. image:: img/groups_manage_groups_button.webp
+When done, press Ok to create it.
 
-The Group Editor window appears. Here's a screenshot from a complex project to
-illustrate the tool's purpose.
+.. image:: img/groups_add_new_group_modal.webp
 
-.. image:: img/groups_group_editor_window.webp
+You should see the new groups appear in the Groups dock under Scene Groups if the Global option was
+unmarked, or under Global Groups if that option was marked.
 
-It has three columns:
+A selected Node from the Scene dock can be added into groups by marking the checkbox on the left side
+of the groups in the Groups dock. The node you had selected when creating a new group will be automatically checked.
 
-1. A list of groups used by nodes in the current scene.
-2. A list of nodes that are not part of the selected group.
-3. A list of nodes in the group.
+.. image:: img/groups_dock_with_created_groups.webp
 
-The fields at the bottom allow you to add new groups or filter nodes in the
-second and third columns.
+All groups present in the project that were marked as Global, created from any scene, will be visible under Global Groups.
 
-.. note:: Any node name that's greyed out means the node was added to the group
-          in a different scene and you cannot edit it here. This happens on
-          scene instances in particular.
+Any other group derived from nodes in the current scene will appear under Scene Groups.
+
+.. warning:: The same underlying logic is used for both Global and Scene groups.
+             Groups with the same name are considered one and the same. This feature is purely organizational.
+
+.. image:: img/groups_node_tab_with_multiple_types_of_groups.webp
+
+You can manage Global Groups in the Groups tab of the Globals dock, inside Project Settings. There, you will be able to add new
+global groups, or change existing groups' names and descriptions.
+
+.. image:: img/groups_global_groups_settings.webp
 
 Using code
 ~~~~~~~~~~
@@ -98,7 +103,7 @@ enemies that the player was spotted.
 .. tabs::
  .. code-tab:: gdscript GDScript
 
-    func _on_Player_spotted():
+    func _on_player_spotted():
         get_tree().call_group("guards", "enter_alert_mode")
 
  .. code-tab:: csharp

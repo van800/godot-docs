@@ -1,3 +1,7 @@
+:allow_comments: False
+
+.. _doc_gdscript:
+
 GDScript
 ========
 
@@ -13,8 +17,3 @@ GDScript
    static_typing
    warning_system
    gdscript_format_string
-
-.. seealso::
-
-    See :ref:`doc_gdscript_grammar` if you are interested in writing a third-party
-    tool that interacts with GDScript, such as a linter or formatter.

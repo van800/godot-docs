@@ -3,10 +3,21 @@
 Controllers, gamepads, and joysticks
 ====================================
 
-Godot supports hundreds of controller models thanks to the community-sourced
-`SDL game controller database <https://github.com/gabomdq/SDL_GameControllerDB>`__.
+Godot supports hundreds of controller models out of the box.
+Controllers are supported on Windows, macOS, Linux, Android, iOS, and Web.
 
-Controllers are supported on Windows, macOS, Linux, Android, iOS, and HTML5.
+.. note::
+
+    Since Godot 4.5, the engine relies on `SDL 3 <https://www.libsdl.org/index.php>`__
+    for controller support on Windows, macOS, and Linux. This means the list of
+    supported controllers and their behavior should closely match what is available
+    in other games and engines using SDL 3. Note that SDL is only used for input,
+    not for windowing or sound.
+
+    Prior to Godot 4.5, the engine used its own controller support code.
+    This can cause certain controllers to behave incorrectly.
+    This custom code is still used to support controllers on Android and Web,
+    so it may result in issues appearing only on those platforms.
 
 Note that more specialized devices such as steering wheels, rudder pedals and
 `HOTAS <https://en.wikipedia.org/wiki/HOTAS>`__ are less tested and may not
@@ -39,7 +50,7 @@ Input actions are explained in detail on the :ref:`doc_inputevent` page.
     different code paths since these have to be handled separately.
 
 Which Input singleton method should I use?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are 3 ways to get input in an analog-aware way:
 
@@ -57,8 +68,10 @@ There are 3 ways to get input in an analog-aware way:
     # The line below is similar to `get_vector()`, except that it handles
     # the deadzone in a less optimal way. The resulting deadzone will have
     # a square-ish shape when it should ideally have a circular shape.
-    var velocity = Vector2(Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
-		Input.get_action_strength("move_back") - Input.get_action_strength("move_forward")).clamped(1)
+    var velocity = Vector2(
+            Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
+            Input.get_action_strength("move_back") - Input.get_action_strength("move_forward")
+    ).limit_length(1.0)
 
  .. code-tab:: csharp
 
@@ -70,8 +83,10 @@ There are 3 ways to get input in an analog-aware way:
     // The line below is similar to `get_vector()`, except that it handles
     // the deadzone in a less optimal way. The resulting deadzone will have
     // a square-ish shape when it should ideally have a circular shape.
-    Vector2 velocity = new Vector2(Input.GetActionStrength("move_right") - Input.GetActionStrength("move_left"),
-		Input.GetActionStrength("move_back") - Input.GetActionStrength("move_forward")).Clamped(1);
+    Vector2 velocity = new Vector2(
+            Input.GetActionStrength("move_right") - Input.GetActionStrength("move_left"),
+            Input.GetActionStrength("move_back") - Input.GetActionStrength("move_forward")
+    ).LimitLength(1.0);
 
 - When you have one axis that can go both ways (such as a throttle on a
   flight stick), or when you want to handle separate axes individually,
@@ -129,12 +144,8 @@ use ``Input.is_action_pressed()``:
     frame, use ``Input.is_action_just_pressed()`` instead of
     ``Input.is_action_pressed()``. Unlike ``Input.is_action_pressed()`` which
     returns ``true`` as long as the input is
-    held,``Input.is_action_just_pressed()`` will only return ``true`` for one
+    held, ``Input.is_action_just_pressed()`` will only return ``true`` for one
     frame after the button has been pressed.
-
-In Godot versions before 3.4, such as 3.3, ``Input.get_vector()`` and
-``Input.get_axis()`` aren't available. Only ``Input.get_action_strength()``
-and ``Input.is_action_pressed()`` are available in Godot 3.3.
 
 Vibration
 ---------
@@ -167,7 +178,7 @@ If you're used to handling keyboard and mouse input, you may be surprised by how
 controllers handle specific situations.
 
 Dead zone
-^^^^^^^^^
+~~~~~~~~~
 
 Unlike keyboards and mice, controllers offer axes with *analog* inputs. The
 upside of analog inputs is that they offer additional flexibility for actions.
@@ -195,7 +206,7 @@ specified as an optional 5th parameter. If not specified, it will calculate the
 average deadzone value from all of the actions in the vector.
 
 "Echo" events
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
 Unlike keyboard input, holding down a controller button such as a D-pad
 direction will **not** generate repeated input events at fixed intervals (also
@@ -208,6 +219,33 @@ If you want controller buttons to send echo events, you will have to generate
 at regular intervals. This can be accomplished
 with the help of a :ref:`class_Timer` node.
 
+Window focus
+~~~~~~~~~~~~
+
+Unlike keyboard input, controller inputs can by default be seen by **all** windows on the
+operating system, including unfocused windows.
+
+While this is useful for
+`third-party split screen functionality <https://nucleus-coop.github.io/>`__,
+it can also have adverse effects. Players may accidentally send controller inputs
+to the running project while interacting with another window.
+
+If you wish to ignore controller input events when the project isn't focused,
+set :ref:`ProjectSettings.input_devices/joypads/ignore_joypad_on_unfocused_application<class_ProjectSettings_property_input_devices/joypads/ignore_joypad_on_unfocused_application>` to ``true``.
+Alternatively, you can also set :ref:`Input.ignore_joypad_on_unfocused_application <class_Input_property_ignore_joypad_on_unfocused_application>` to ``true``.
+
+Power saving prevention
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Unlike keyboard and mouse input, controller inputs do **not** inhibit sleep and
+power saving measures (such as turning off the screen after a certain amount of
+time has passed).
+
+To combat this, Godot enables power saving prevention by default when a project
+is running. If you notice the system is turning off its display when playing
+with a gamepad, check the value of **Display > Window > Energy Saving > Keep Screen On**
+in the Project Settings.
+
 Troubleshooting
 ---------------
 
@@ -218,14 +256,18 @@ Troubleshooting
     on GitHub.
 
 My controller isn't recognized by Godot.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First, check that your controller is recognized by other applications. You can
-use the `Gamepad Tester <https://gamepad-tester.com/>`__ website to confirm that
-your controller is recognized.
+use the `Gamepad Tester <https://hardwaretester.com/gamepad>`__ website to confirm
+that your controller is recognized.
+
+On Windows Godot only supports up to 4 controllers at a time. This is
+because Godot uses the XInput API, which is limited to supporting 4 controllers
+at once. Additional controllers above this limit are ignored by Godot.
 
 My controller has incorrectly mapped buttons or axes.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First, if your controller provides some kind of firmware update utility,
 make sure to run it to get the latest fixes from the manufacturer. For instance,
@@ -237,12 +279,23 @@ After updating the controller's firmware, unpair the controller and pair it agai
 with your PC if you are using the controller in wireless mode.
 
 If buttons are incorrectly mapped, this may be due to an erroneous mapping from
-the `SDL game controller database <https://github.com/gabomdq/SDL_GameControllerDB>`__.
-You can contribute an updated mapping to be included in the next Godot version
-by opening a pull request on the linked repository.
+the SDL game controller database used by Godot or the
+`Godot game controller database <https://github.com/godotengine/godot/blob/master/core/input/godotcontrollerdb.txt>`__.
+In this case, you will need to create a custom mapping for your controller.
 
-There are many ways to create mappings. One option is to use the mapping wizard
-in the `official Joypads demo <https://godotengine.org/asset-library/asset/140>`__.
+.. Nintorch: Currently Godot's Input.add_joy_mapping() is broken, it will add a new mapping
+   on top of an already existing mapping from SDL (if it exists), so I'm not sure it
+   should be used as an example at the moment. See GH-118606 in Godot's main repository
+   for more information.
+
+   One option is to use the mapping wizard
+   in the `official Joypads demo <https://godotengine.org/asset-library/asset/2785>`__.
+
+There are many ways to create mappings.
+One option is to start Steam in Big Picture mode, configure the controller and then look in ``config/config.vdf``
+in the Steam installation directory for the ``SDL_GamepadBind`` entry.
+Another option is to use `SDL's testcontroller application <https://www.libsdl.org/tmp/testcontroller.zip>`__
+(the link only provides a Windows executable).
 Once you have a working mapping for your controller, you can test it by defining
 the ``SDL_GAMECONTROLLERCONFIG`` environment variable before running Godot:
 
@@ -262,30 +315,63 @@ the ``SDL_GAMECONTROLLERCONFIG`` environment variable before running Godot:
     $env:SDL_GAMECONTROLLERCONFIG="your:mapping:here"
     path\to\godot.exe
 
-To test mappings on non-desktop platforms or to distribute your project with
-additional controller mappings, you can add them by calling
-:ref:`Input.add_joy_mapping() <class_Input_method_add_joy_mapping>`
-as early as possible in a script's ``_ready()`` function.
+.. Nintorch: See the comment above on why this is commented out.
+   To test mappings on non-desktop platforms or to distribute your project with
+   additional controller mappings, you can add them by calling
+   :ref:`Input.add_joy_mapping() <class_Input_method_add_joy_mapping>`
+   as early as possible in a script's ``_ready()`` function.
+
+Once you are satisfied with the custom mapping, you can contribute it for
+the next Godot version by opening a pull request on the
+`Godot game controller database <https://github.com/godotengine/godot/blob/master/core/input/godotcontrollerdb.txt>`__,
+or creating an issue in the `Godot repository <https://github.com/godotengine/godot/issues>`__.
+
+Since Godot uses SDL 3 for controller input, please consider contributing
+the mapping for the SDL library as well by opening a pull request on the
+`official SDL gamepad database <https://github.com/libsdl-org/SDL/blob/main/src/joystick/SDL_gamepad_db.h>`__,
+or creating an issue in the `SDL repository <https://github.com/libsdl-org/SDL/issues>`__.
+
+.. note::
+
+    Note that there are "generic" controllers on the market (usually their
+    ``Input.get_joy_info(device)["raw_name"]`` property contains ``"USB Gamepad"`` string),
+    and different generic controllers may use the same chipset, but they would have a different button placement,
+    so creating a mapping for one of those controllers will most likely conflict with other ones,
+    because the engine has no way of differentiating between controllers with the same chipset.
 
 My controller works on a given platform, but not on another platform.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Linux
-~~~~~
+^^^^^
 
-Prior to Godot 3.3, official Godot binaries were compiled with udev support
-but self-compiled binaries were compiled *without* udev support unless
-``udev=yes`` was passed on the SCons command line. This made controller
-hotplugging support unavailable in self-compiled binaries.
+If you're using a self-compiled engine binary, make sure it was compiled with
+udev support. This is enabled by default, but it is possible to disable udev
+support by specifying ``udev=no`` on the SCons command line. If you're using an
+engine binary supplied by a Linux distribution, double-check whether it was
+compiled with udev support.
 
-HTML5
-~~~~~
+Controllers can still work without udev support, but it is less reliable as
+regular polling must be used to check for controllers being connected or
+disconnected during gameplay (hotplugging).
 
-HTML5 controller support is often less reliable compared to "native" platforms.
+Android
+^^^^^^^
+
+As described at the top of the page, controller support on mobile platforms relies
+on a custom implementation instead of using SDL for input. This means controller
+support may be less reliable than on desktop platforms.
+
+Support for SDL-based controller input on mobile platforms is
+planned in a future release.
+
+Web
+^^^
+
+Web controller support is often less reliable compared to "native" platforms.
 The quality of controller support tends to vary wildly across browsers. As a
 result, you may have to instruct your players to use a different browser if they
 can't get their controller to work.
 
-Also, note that
-`controller support was significantly improved <https://github.com/godotengine/godot/pull/45078>`__
-in Godot 3.3 and later.
+Like for mobile platforms, support for SDL-based controller input on the web platform
+is planned in a future release.

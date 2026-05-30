@@ -24,7 +24,6 @@ are that:
 
 -  The language is easy to get started with.
 -  Most code can be written and changed quickly and without hassle.
--  Less code written means less errors & mistakes to fix.
 -  The code is easy to read (little clutter).
 -  No compilation is required to test.
 -  Runtime is tiny.
@@ -38,7 +37,7 @@ While the main disadvantages are:
    statically typed languages only appear while running the code
    (because expression parsing is more strict).
 -  Less flexibility for code-completion (some variable types are only
-   known at run-time).
+   known at runtime).
 
 This, translated to reality, means that Godot used with GDScript is a combination
 designed to create games quickly and efficiently. For games that are very
@@ -230,11 +229,9 @@ Or unordered sets:
 Dictionaries
 ------------
 
-Dictionaries are a powerful tool in dynamically typed languages.
-Most programmers that come from statically typed languages (such as C++
-or C#) ignore their existence and make their life unnecessarily more
-difficult. This datatype is generally not present in such languages (or
-only in limited form).
+Dictionaries are a powerful tool in dynamically typed languages. In
+GDScript, untyped dictionaries can be used for many cases where a statically
+typed language would tend to use another data structure.
 
 Dictionaries can map any value to any other value with complete
 disregard for the datatype used as either key or value. Contrary to
@@ -322,23 +319,24 @@ Iterating using the C-style for loop in C-derived languages can be quite complex
 
 .. code-block:: cpp
 
-    const char* strings = new const char*[50];
+    const char** strings = new const char*[50];
 
     [..]
 
     for (int i = 0; i < 50; i++) {
-
-        printf("Value: %s\n", i, strings[i]);
+        printf("Value: %c Index: %d\n", strings[i], i);
     }
 
     // Even in STL:
+    std::list<std::string> strings;
 
-    for (std::list<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++) {
+    [..]
 
+    for (std::string::const_iterator it = strings.begin(); it != strings.end(); it++) {
         std::cout << *it << std::endl;
     }
 
-Because of this, GDScript makes the opinonated decision to have a for-in loop over iterables instead:
+Because of this, GDScript makes the opinionated decision to have a for-in loop over iterables instead:
 
 ::
 
@@ -420,36 +418,37 @@ while() loops are the same everywhere:
 Custom iterators
 ----------------
 You can create custom iterators in case the default ones don't quite meet your
-needs by overriding the Variant class's ``_iter_init``, ``_iter_next``, and ``_iter_get``
+needs by overriding ``_iter_init()``, ``_iter_next()``, and ``_iter_get()``
 functions in your script. An example implementation of a forward iterator follows:
 
 ::
 
     class ForwardIterator:
-        var start
-        var current
-        var end
-        var increment
+        var _start
+        var _end
+        var _increment
 
-        func _init(start, stop, increment):
-            self.start = start
-            self.current = start
-            self.end = stop
-            self.increment = increment
+        func _init(start, end, increment):
+            _start = start
+            _end = end
+            _increment = increment
 
-        func should_continue():
-            return (current < end)
+        func _should_continue(current):
+            return current < _end
 
-        func _iter_init(arg):
-            current = start
-            return should_continue()
+        func _iter_init(iter):
+            # Initialize the state to store the current value.
+            iter[0] = _start
+            return _should_continue(iter[0])
 
-        func _iter_next(arg):
-            current += increment
-            return should_continue()
+        func _iter_next(iter):
+            iter[0] += _increment
+            return _should_continue(iter[0])
 
-        func _iter_get(arg):
-            return current
+        func _iter_get(iter):
+            # The state is not wrapped in an array for `_iter_get()`.
+            # The iteration value is the same as the state.
+            return iter
 
 And it can be used like any other iterator:
 
@@ -459,8 +458,19 @@ And it can be used like any other iterator:
     for i in itr:
         print(i) # Will print 0, 2, and 4.
 
-Make sure to reset the state of the iterator in ``_iter_init``, otherwise nested
-for-loops that use custom iterators will not work as expected.
+It is possible but discouraged to store the state in a member variable. 
+Multiple states are necessary in cases such as nested loops where the same
+iterator instance is used simultaneously. The ``iter`` parameter in 
+``_iter_init()`` and ``_iter_next()`` is a single-element array so that updates
+can persist. Whereas in ``_iter_get()``, the state is is not wrapped because it
+is supposed to be read-only.
+
+Returning ``true`` from ``_iter_init()`` and ``_iter_next()`` indicates that the
+iterator is valid. Returning ``false`` will terminate the loop.
+
+For more details see :ref:`_iter_init() <class_Object_private_method__iter_init>`,
+:ref:`_iter_next() <class_Object_private_method__iter_next>`, and
+:ref:`_iter_get() <class_Object_private_method__iter_get>`.
 
 Duck typing
 -----------
@@ -524,5 +534,4 @@ exists is desirable:
         if object.has_method("smash"):
             object.smash()
 
-Then, simply define that method and anything the rock touches can be
-smashed.
+Then, define that method and anything the rock touches can be smashed.

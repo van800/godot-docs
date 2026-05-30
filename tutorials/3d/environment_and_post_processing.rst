@@ -26,7 +26,7 @@ but you can enable it by using it in one of the following locations, in order
 of priority:
 
 Camera3D node (high priority)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An Environment can be set to a Camera3D node. It will have priority over any
 other setting.
@@ -37,7 +37,7 @@ This is mostly useful when you want to override an existing environment,
 but in general it's a better idea to use the option below.
 
 WorldEnvironment node (medium priority, recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The WorldEnvironment node can be added to any scene, but only one can exist per
 active scene tree. Adding more than one will result in a warning.
@@ -49,7 +49,7 @@ Any Environment added has higher priority than the default Environment
 which makes it quite useful.
 
 Preview environment and sun (low priority)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
 
@@ -65,7 +65,7 @@ be disabled using the buttons at the top of the 3D editor:
 Clicking on the 3 vertical dots on the right will display a dialog which allows
 you to customize the appearance of the preview environment:
 
-.. image:: img/environment_preview_sun_sky_toggle.webp
+.. image:: img/environment_preview_sun_sky_dialog.webp
 
 **The preview sun and sky is only visible in the editor, not in the running
 project.** Using the buttons at the bottom of the dialog, you can add the
@@ -88,9 +88,9 @@ Camera attributes
     adjusting those properties independently of other Environment settings more
     easily.
 
-The :ref:`class_CameraAttributes` resource stores exposure and depth of field information. It
-also allows enabling automatic exposure adjustments depending on scene
-brightness.
+The :ref:`class_CameraAttributes` resource stores exposure and depth of field
+information. It also allows enabling automatic exposure adjustments depending on
+scene brightness.
 
 There are two kinds of CameraAttribute resources available:
 
@@ -130,7 +130,7 @@ The following is a detailed description of all environment options and how
 they are intended to be used.
 
 Background
-^^^^^^^^^^
+~~~~~~~~~~
 
 The Background section contains settings on how to fill the background (parts of
 the screen where objects were not drawn). The background not only serves the
@@ -152,13 +152,17 @@ There are several background modes available:
 - **Sky** lets you define a background sky material (see below). By default,
   objects in the scene will reflect this sky material and absorb ambient light
   from it.
-- **Canvas** displays the 2D scene as a background to the 3D scene.
+- **Canvas** displays the 2D scene as a background to the 3D scene. This can be used
+  to make environment effects visible on 2D rendering, such as
+  :ref:`glow in 2D <doc_environment_and_post_processing_using_glow_in_2d>`.
 - **Keep** does not draw any sky, keeping what was present on previous frames
   instead. This improves performance in purely indoor scenes, but creates a
   "hall of mirrors" visual glitch if the sky is visible at any time.
+- **Camera Feed** displays a :ref:`class_CameraFeed` from a physical camera as the
+  background, useful for AR games on mobile devices.
 
 Sky materials
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
 When using the **Sky** background mode (or the ambient/reflected light mode is
 set to **Sky**), a Sky subresource becomes available to edit in the Environment
@@ -199,7 +203,7 @@ If you need a custom sky material (e.g. for procedural clouds), you can
 create a custom :ref:`sky shader <doc_sky_shader>`.
 
 Ambient light
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
 Ambient light (as defined here) is a type of light that affects every piece of
 geometry with the same intensity. It is global and independent of lights that
@@ -223,8 +227,6 @@ There are several types of ambient light to choose from:
 - **Sky:** Source ambient light from a specified sky, even if the background is
   set to a mode other than **Sky**. If the background mode is already **Sky**,
   this mode behaves identically to **Background**.
-
-.. image:: img/environment_ambient.webp
 
 When the ambient light mode is set to Sky or Background (and background is set
 to Sky), it's possible to blend between the ambient color and sky using the
@@ -253,7 +255,7 @@ Using one of the methods described above will replace constant ambient
 lighting with ambient lighting from the probes.
 
 Reflected light
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 Reflected light (also called specular light) is the other of the two components
 of image-based lighting.
@@ -268,100 +270,73 @@ Reflected light can be set to one of 3 modes:
   mode other than **Sky**. If the background mode is already **Sky**, this mode
   behaves identically to **Background**.
 
-Fog
-^^^
-
-.. note::
-
-    This section refers to non-volumetric fog only.
-    It is possible to use both non-volumetric fog and :ref:`doc_volumetric_fog`
-    at the same time.
-
-Fog, as in real life, makes distant objects fade away into a uniform color.
-There are two kinds of fog in Godot:
-
-- **Depth Fog:** This one is applied based on the distance from the camera.
-- **Height Fog:** This one is applied to any objects below (or above) a certain
-  height, regardless of the distance from the camera.
-
-.. image:: img/environment_fog_depth_height.webp
-
-Both of these fog types can have their curve tweaked, making their transition more or less sharp.
-
-Two properties can be tweaked to make the fog effect more interesting:
-
-The first is **Sun Amount**, which makes use of the Sun Color property of the fog.
-When looking towards a directional light (usually a sun), the color of the fog
-will be changed, simulating the sunlight passing through the fog.
-
-The second is **Transmit Enabled** which simulates more realistic light transmittance.
-In practice, it makes light stand out more across the fog.
-
-.. image:: img/environment_fog_transmission.webp
-
-Volumetric Fog
-^^^^^^^^^^^^^^
-
-Volumetric fog provides a realistic fog effect to the scene, with fog color
-being affected by the lights that traverse the fog.
-
-.. seealso::
-
-  See :ref:`doc_volumetric_fog` for documentation on setting up volumetric fog.
-
 Tonemap
-^^^^^^^
+~~~~~~~
 
-Tonemap selects the tonemapping curve that will be applied to the scene, from a
-list of standard curves used in the film and game industries. Tonemapping operators
-other than Linear are used to make light and dark areas more homogeneous,
-while also avoiding clipping of bright highlights.
+Tonemap selects the tonemapping algorithm that will be applied to the scene, from a
+list of standard algorithms used in the film and game industries. Tonemapping modes
+other than **Linear** are used to make light and dark areas more homogeneous,
+while also avoiding clipping of bright highlights. Each algorithm has a different
+performance characteristic that should be considered when choosing your tonemapper.
 
 The tone mapping options are:
 
-- **Mode:** The tone mapping mode to use.
+- **Mode:** The tonemapping mode to use.
 
-  - **Linear:** The default tonemapping mode. This is the fastest and simplest
-    tonemapping operator, but it causes bright lighting to look blown out, with
-    noticeable clipping in the output colors.
-  - **Reinhardt:** Performs a variation on rendered pixels' colors by this
-    formula: ``color = color / (1 + color)``. This avoids clipping bright
-    highlights, but the resulting image can look a bit dull.
-  - **Filmic:** This avoids clipping bright highlights, with a resulting image
-    that usually looks more vivid than Reinhardt.
-  - **ACES:** Academy Color Encoding System tonemapper.
-    ACES is slightly more expensive than other options, but it handles
-    bright lighting in a more realistic fashion by desaturating it as it becomes brighter.
-    ACES typically has a more contrasted output compared to Reinhardt and Filmic.
-    ACES is the recommended option when aiming for photorealistic visuals.
-    This tonemapping mode was called "ACES Fitted" in Godot 3.x.
+  - **Linear:** Does not modify color data, resulting in a linear tonemapping
+    curve which unnaturally clips bright values, causing bright lighting to
+    look blown out. The simplest and fastest tonemapper.
+  - **Reinhard:** A simple tonemapping curve that rolls off bright values to
+    prevent clipping. This results in an image that can appear dull and low
+    contrast. Slower than Linear. When **White** is left at the default
+    value of ``1.0``, Reinhard produces an identical image to Linear.
+  - **Filmic:** Uses a film-like tonemapping curve to prevent clipping of
+    bright values and provide better contrast than Reinhard. Slightly slower
+    than Reinhard.
+  - **ACES:** Uses a high-contrast film-like tonemapping curve and desaturates
+    bright values for a more realistic appearance. Slightly slower than Filmic.
+  - **AgX:** Uses a film-like tonemapping curve and desaturates bright values
+    for a more realistic appearance. Better than other tonemappers at
+    maintaining the hue of colors as they become brighter. The slowest
+    tonemapping option.
 
-- **Exposure:** Tone mapping exposure which simulates amount of light received
-  over time (default: ``1.0``). Higher values result in an overall brighter appearance.
-  If the scene appears too dark as a result of a tonemapping operator or whitepoint
-  change, try increasing this value slightly.
+- **Exposure:** Adjusts the brightness of values before they are provided to
+  the tonemapper. Higher **Exposure** values result in a brighter image.
+  Values provided to the tonemapper will also be multiplied by ``2.0``
+  and ``1.8`` for **Filmic** and **ACES** respectively to produce a similar
+  apparent brightness as Linear.
 
-- **White:** Tone mapping whitepoint, which simulates where in the scale white is
-  located (default: ``1.0``). For photorealistic lighting, recommended values are
-  between ``6.0`` and ``8.0``. Higher values result in less blown out highlights,
-  but make the scene appear slightly darker as a whole.
+- **White:** The white reference value for tonemapping, which indicates where
+  bright white is located in the scale of values provided to the tonemapper.
+  For photorealistic lighting, recommended values are between ``6.0`` and
+  ``8.0``. Higher values result in less blown out highlights, but may make the
+  scene appear lower contrast. **White** is not available when using
+  **Linear**. If you're using AgX, the mobile renderer, and HDR 2D is disabled,
+  then the value set here will be ignored, and a value of ``2.0`` will be used
+  instead.
+
+- **AGX Contrast:** Only available when using AgX. Increasing this makes dark values
+  darker, and bright values brighter. It creates better results than the contrast
+  option in the adjustment section at no additional performance cost.
 
 Mid- and post-processing effects
 --------------------------------
 
-The Environment resource supports many widely-used mid- and post-processing effects.
+The Environment resource supports many popular mid- and post-processing effects.
 
 .. note::
 
-    Screen-space effects such as SSR, SSAO, SSIL and glow do not operate on
+    Screen-space effects such as :abbr:`SSR (Screen-Space Reflections)`,
+    :abbr:`SSAO (Screen-Space Ambient Occlusion)`,
+    :abbr:`SSIL (Screen-Space Indirect Lighting)` and glow do not operate on
     geometry that is located outside the camera view or is occluded by other
     opaque geometry. Consider this when tweaking their settings to avoid
     distracting changes during gameplay.
 
 Screen-Space Reflections (SSR)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*This feature is only available when using the Forward+ backend, not
+*This feature is only available when using the Forward+ renderer, not
 Mobile or Compatibility.*
 
 While Godot supports several sources of reflection data such as
@@ -383,7 +358,7 @@ off-screen objects).
 
 A few user-controlled parameters are available to better tweak the technique:
 
-- **Max Steps:** Determines the length of the reflection. The bigger this
+- **Max Steps:** Determines the maximum length of the reflection. The bigger this
   number, the more costly it is to compute.
 - **Fade In:** Allows adjusting the fade-in curve, which is useful to make the
   contact area softer.
@@ -395,15 +370,24 @@ A few user-controlled parameters are available to better tweak the technique:
   screen-space reflections exhibit fewer "breakups", at the cost of some objects
   creating physically incorrect reflections.
 
-Keep in mind that screen-space-reflections only work for reflecting opaque
-geometry. Transparent materials won't be reflected, as they don't write to the depth buffer.
-This also applies to shaders that use ``SCREEN_TEXTURE`` or ``DEPTH_TEXTURE``.
+Additionally, you can adjust the quality of SSR in the project settings
+by toggling **Rendering > Environment > Screen Space Reflection > Half Size**.
+By default, screen-space reflections are rendered at half resolution for
+performance reasons. Disabling this setting will make the effect render at
+full resolution, which improves quality at the cost of increased GPU utilization.
+
+.. note::
+
+    Keep in mind that screen-space reflections only work for reflecting opaque
+    geometry. Transparent materials won't be reflected, as they don't write to the depth buffer.
+    This also applies to shaders that use ``hint_screen_texture`` or ``hint_depth_texture``
+    uniforms.
 
 Screen-Space Ambient Occlusion (SSAO)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*This feature is only available when using the Forward+ backend, not
-Mobile or Compatibility.*
+*This feature is only available when using the Forward+ and Compatibility renderers,
+not Mobile.*
 
 As mentioned in the **Ambient** section, areas where light from light nodes
 does not reach (either because it's outside the radius or shadowed) are lit
@@ -423,21 +407,21 @@ a narrower path for the light to enter:
 .. image:: img/environment_ssao.webp
 
 It is a common mistake to enable this effect, turn on a light, and not be able to
-appreciate it. This is because :abbr:`Screen-Space Ambient Occlusion (SSAO)`
+appreciate it. This is because :abbr:`SSAO (Screen-Space Ambient Occlusion)`
 only acts on *ambient* light. It does not affect direct light.
 
 This is why, in the image above, the effect is less noticeable under the direct
 light (on the left). If you want to force
-:abbr:`Screen-Space Ambient Occlusion (SSAO)` to work with direct light too,
+:abbr:`SSAO (Screen-Space Ambient Occlusion)` to work with direct light too,
 use the **Light Affect** parameter. Even though this is not physically correct,
 some artists like how it looks.
 
-:abbr:`Screen-Space Ambient Occlusion (SSAO)` looks best when combined with a
+:abbr:`SSAO (Screen-Space Ambient Occlusion)` looks best when combined with a
 real source of indirect light, like VoxelGI:
 
 .. image:: img/environment_ssao2.webp
 
-Tweaking :abbr:`Screen-Space Ambient Occlusion (SSAO)` is possible with several
+Tweaking :abbr:`SSAO (Screen-Space Ambient Occlusion)` is possible with several
 parameters:
 
 .. image:: img/environment_ssao_parameters.webp
@@ -448,9 +432,9 @@ parameters:
 - **Intensity:** The primary screen-space ambient occlusion intensity. Acts as a
   multiplier for the screen-space ambient occlusion effect. A higher value
   results in darker occlusion.
-  Since :abbr:`Screen-Space Ambient Occlusion (SSAO)` is a screen-space effect,
+  Since :abbr:`SSAO (Screen-Space Ambient Occlusion)` is a screen-space effect,
   it's recommended to remain conservative with this value.
-  :abbr:`Screen-Space Ambient Occlusion (SSAO)` that is too strong can be
+  :abbr:`SSAO (Screen-Space Ambient Occlusion)` that is too strong can be
   distracting during gameplay.
 - **Power:** The distribution of occlusion. A higher value results in darker
   occlusion, similar to **Intensity**, but with a sharper falloff.
@@ -467,34 +451,72 @@ parameters:
 - **Light Affect:** The screen-space ambient occlusion intensity in direct
   light. In real life, ambient occlusion only applies to indirect light, which
   means its effects can't be seen in direct light. Values higher than 0 will
-  make the SSAO effect visible in direct light. Values above ``0.0`` are not
-  physically accurate, but some artists prefer this effect.
+  make the :abbr:`SSAO (Screen-Space Ambient Occlusion)` effect visible in
+  direct light. Values above ``0.0`` are not physically accurate, but some
+  artists prefer this effect.
+- **AO Channel Affect** The screen-space ambient occlusion intensity on
+  materials that have an AO texture defined. Values higher than ``0.0`` will
+  make the SSAO effect visible in areas darkened by AO textures.
+
+Additionally, you can adjust the quality of SSAO in the project settings'
+**Rendering > Environment > SSAO** section:
+
+- **Quality:** Sets the quality of the screen-space ambient occlusion effect.
+  Higher values take more samples and so will result in better quality at the
+  cost of performance. Setting this to Ultra will use the **Adaptive Target** setting
+  (see below).
+- **Half Size:** If ``true``, screen-space ambient occlusion will be rendered at
+  half size and then upscaled before being added to the scene. This is
+  significantly faster but may miss small details. If ``false``, screen-space
+  ambient occlusion will be rendered at full size.
+- **Adaptive Target:** Quality target to use when **Quality** is set to
+  **Ultra**. A value of ``0.0`` provides a quality and speed similar to Medium
+  while a value of ``1.0`` provides much higher quality than any of the other
+  settings at the cost of performance.
+- **Blur Passes:** Number of blur passes to use when computing screen-space
+  ambient occlusion. A higher number will result in a smoother look, but will be
+  slower to compute and will have less high-frequency detail.
+- **Fadeout From:** Distance at which the screen-space ambient occlusion effect
+  starts to fade out. Use this hide ambient occlusion from far away.
+- **Fadeout To:** Distance at which the screen-space ambient occlusion is fully
+  faded out. Use this hide ambient occlusion from far away.
+
+.. note::
+
+    Since Godot 4.6, a simplified version of SSAO is available in the Compatibility
+    renderer. This implementation has a different look, but should perform
+    significantly better on low-end devices compared to SSAO in Forward+.
+
+    When using the Compatibility renderer, only the **Radius** and **Intensity**
+    parameters can be adjusted.
+
+.. _doc_environment_and_post_processing_ssil:
 
 Screen-Space Indirect Lighting (SSIL)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*This feature is only available when using the Forward+ backend, not
+*This feature is only available when using the Forward+ renderer, not
 Mobile or Compatibility.*
 
-:abbr:`Screen-Space Indirect Lighting (SSIL)` provides indirect lighting for
+:abbr:`SSIL (Screen-Space Indirect Lighting)` provides indirect lighting for
 small details or dynamic geometry that other global illumination techniques
 cannot cover. This applies to bounced diffuse lighting, but also emissive
-materials. When :abbr:`Screen-Space Indirect Lighting (SSIL)` is enabled on its
+materials. When :abbr:`SSIL (Screen-Space Indirect Lighting)` is enabled on its
 own, the effect may not be that noticeable, which is intended.
 
-Instead, :abbr:`Screen-Space Indirect Lighting (SSIL)` is meant to be used as a
+Instead, :abbr:`SSIL (Screen-Space Indirect Lighting)` is meant to be used as a
 *complement* to other global illumination techniques such as VoxelGI, SDFGI and
-LightmapGI. :abbr:`Screen-Space Indirect Lighting (SSIL)` also provides
-a subtle ambient occlusion effect, similar to SSAO but with less detail.
+LightmapGI. :abbr:`SSIL (Screen-Space Indirect Lighting)` also provides
+a subtle ambient occlusion effect, similar to SSAO, but with less detail.
 
 This feature only provides indirect lighting. It is not a full global illumination
 solution. This makes it different from screen-space global illumination (SSGI)
-offered by other 3D engines. :abbr:`Screen-Space Indirect Lighting (SSIL)`
-can be combined with :abbr:`Screen-Space Reflections (SSR)` and/or
-:abbr:`Screen-Space Ambient Occlusion (SSAO)` for greater visual quality
+offered by other 3D engines. :abbr:`SSIL (Screen-Space Indirect Lighting)`
+can be combined with :abbr:`SSR (Screen-Space Reflections)` and/or
+:abbr:`SSAO (Screen-Space Ambient Occlusion)` for greater visual quality
 (at the cost of performance).
 
-Tweaking SSIL is possible with several parameters:
+Tweaking :abbr:`SSIL (Screen-Space Indirect Lighting)` is possible with several parameters:
 
 - **Radius:** The distance that bounced lighting can travel when using the
   screen space indirect lighting effect. A larger value will result in light
@@ -514,17 +536,42 @@ Tweaking SSIL is possible with several parameters:
   leaking is desirable, such as when the scene mostly contains emissive objects
   that emit light from faces that cannot be seen from the camera.
 
+Additionally, you can adjust the quality of SSIL in the project settings'
+**Rendering > Environment > SSIL** section:
+
+- **Quality:** Sets the quality of the screen-space ambient occlusion effect.
+  Higher values take more samples and so will result in better quality, at the
+  cost of performance. Setting to Ultra will use the **Adaptive Target** setting
+  (see below).
+- **Half Size:** If ``true``, screen-space ambient occlusion will be rendered at
+  half size and then upscaled before being added to the scene. This is
+  significantly faster but may miss small details. If ``false``, screen-space
+  ambient occlusion will be rendered at full size.
+- **Adaptive Target:** Quality target to use when **Quality** is set to
+  **Ultra**. A value of ``0.0`` provides a quality and speed similar to Medium
+  while a value of ``1.0`` provides much higher quality than any of the other
+  settings at the cost of performance. When using the adaptive target, the
+  performance cost scales with the complexity of the scene.
+- **Blur Passes:** Number of blur passes to use when computing screen-space
+  indirect lighting. A higher number will result in a smoother look, but will be
+  slower to compute and will have less high-frequency detail.
+- **Fadeout From:** Distance at which the screen-space indirect lighting effect
+  starts to fade out. Use this to hide screen-space indirect lighting from far
+  away.
+- **Fadeout To:** Distance at which the screen-space indirect lighting is fully
+  faded out. Use this to hide screen-space indirect lighting from far away.
+
 .. image:: img/environment_ssil.webp
 
 Signed Distance Field Global Illumination (SDFGI)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*This feature is only available when using the Forward+ backend, not
+*This feature is only available when using the Forward+ renderer, not
 Mobile or Compatibility.*
 
 Signed distance field global illumination (SDFGI) is a form of real-time global
 illumination. It is not a screen-space effect, which means it can provide global
-illumination for off-screen elements (unlike :abbr:`Screen-Space Indirect Lighting (SSIL)`).
+illumination for off-screen elements (unlike :abbr:`SSIL (Screen-Space Indirect Lighting)`).
 
 .. seealso::
 
@@ -536,7 +583,17 @@ illumination for off-screen elements (unlike :abbr:`Screen-Space Indirect Lighti
 .. _doc_environment_and_post_processing_glow:
 
 Glow
-^^^^
+~~~~
+
+.. note::
+
+    When using the Compatibility rendering method, glow uses a different
+    implementation with some properties being unavailable and hidden from the
+    inspector: **Levels**, **Normalized**, **Strength**, **Blend Mode**,
+    **Mix**, **Map**, and **Map Strength**.
+
+    This implementation is optimized to run on low-end devices and is less
+    flexible as a result.
 
 In photography and film, when light amount exceeds the maximum *luminance*
 (brightness) supported by the media, it generally bleeds outwards to darker
@@ -580,8 +637,9 @@ The **Blend Mode** of the effect can also be changed:
   an all around.
 - **Softlight** is the default and weakest one, producing only a subtle color
   disturbance around the objects. This mode works best on dark scenes.
-- **Replace** can be used to blur the whole screen or debug the effect. It only
-  shows the glow effect without the image below.
+- **Replace** can be used to
+  :ref:`blur the whole screen <doc_environment_and_post_processing_using_glow_to_blur_the_screen>`
+  or debug the effect. It only shows the glow effect without the image below.
 - **Mix** mixes the glow effect with the main image. This can be used for
   greater artistic control. The mix factor is controlled by the **Mix** property
   which appears above the blend mode (only when the blend mode is set to Mix).
@@ -613,14 +671,152 @@ There are 2 main use cases for a glow map texture:
 
 .. image:: img/environment_glow_map.webp
 
+By default, glow uses a bicubic scaling filter on desktop platforms and a
+bilinear scaling filter on mobile platforms. The bicubic scaling filter results
+in higher quality with a less blocky appearance, but it has a performance cost
+on the GPU which can be significant on integrated graphics.
+The scale mode can be controlled using the
+**Rendering > Environment > Glow > Upscale Mode** project setting.
+This setting is only effective when using the Forward+ or Mobile renderers,
+as Compatibility uses a different glow implementation.
+
+.. image:: img/environment_and_post_processing_glow_scale_mode.webp
+
+.. _doc_environment_and_post_processing_using_glow_in_2d:
+
+Using glow in 2D
+~~~~~~~~~~~~~~~~
+
+There are 2 ways to use glow in 2D:
+
+- Since Godot 4.2, you can enable HDR for 2D rendering when using the Forward+
+  and Mobile rendering methods. This has a performance cost, but it allows for a
+  greater dynamic range. This also allows you to control which objects glow
+  using their individual **Modulate** or **Self Modulate** properties (use the
+  Intensity slider in the color picker). Enabling HDR can also reduce banding in the 2D
+  rendering output.
+
+  - To enable HDR in 2D, open the Project Settings, enable
+    :ref:`Rendering > Viewport > HDR 2D<class_ProjectSettings_property_rendering/viewport/hdr_2d>`
+    then restart the editor.
+
+- If you want to maximize performance, you can leave HDR disabled for 2D
+  rendering. However, you will have less control on which objects glow.
+
+  - Enable glow, set the environment background mode to **Canvas** then decrease
+    **Glow HDR Threshold** so that pixels that are not overbright will still
+    glow. To prevent UI elements from glowing, make them children of a
+    :ref:`class_CanvasLayer` node. You can control which layers are affected by
+    glow using the **Background > Canvas Max Layer** property of the Environment
+    resource.
+
+.. figure:: img/environment_and_post_processing_glow_in_2d.webp
+   :align: center
+   :alt: Example of using glow in a 2D scene
+
+   Example of using glow in a 2D scene. HDR 2D is enabled, while coins and the
+   bullet have their **Modulate** property increased to overbright values using the
+   Intensity slider in the color picker.
+
+.. warning::
+
+    The 2D renderer renders in linear color space if the
+    :ref:`Rendering > Viewport > HDR 2D<class_ProjectSettings_property_rendering/viewport/hdr_2d>`
+    project setting is enabled, so the ``source_color`` hint must also be used
+    for uniform samplers that are used as color input in ``canvas_item`` shaders.
+    If this is not done, the texture will appear washed out.
+
+    If 2D HDR is disabled, ``source_color`` will keep working correctly in
+    ``canvas_item`` shaders, so it's recommend to use it when relevant either
+    way.
+
+    Using linear color space also means that alpha blending will change. Sprites
+    with low opacity values generally become more visible, and font rendering will
+    look bolder due to the low-opacity pixels from the font antialiasing becoming
+    more visible. This also affects the editor's own rendering.
+
+.. _doc_environment_and_post_processing_using_glow_to_blur_the_screen:
+
+Using glow to blur the screen
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Glow can be used to blur the whole viewport, which is useful for background blur
+when a menu is open. Only 3D rendering will be affected unless the environment's
+background mode is set to **Canvas**. To prevent UI elements from being blurred
+when using the Canvas background mode, make them children of a :ref:`class_CanvasLayer`
+node. You can control which layers are affected by this blurring effect using the
+**Background > Canvas Max Layer** property of the Environment resource.
+
+To use glow as a blurring solution:
+
+- Enable **Normalized** and adjust levels according to preference. Increasing
+  higher level indices will result in a more blurred image. It's recommended to
+  leave a single glow level at ``1.0`` and leave all other glow levels at
+  ``0.0``, but this is not required. Note that the final appearance will vary
+  depending on viewport resolution.
+- Set **Intensity** to ``1.0`` and **Bloom** to ``1.0``.
+- Set the blend mode to **Replace** and **HDR Luminance Cap** to ``1.0``.
+
+.. figure:: img/environment_and_post_processing_glow_blur.webp
+   :align: center
+   :alt: Example of using glow to blur the 2D rendering in the menu's background
+
+   Example of using glow to blur the 2D rendering in the menu's background
+
+Fog
+~~~
+
 .. note::
 
-    Glow can be used in 2D as well. To do so, set the environment background
-    mode to **Canvas** then enable glow as usual. You may have to decrease
-    **Glow HDR Threshold** to see a difference.
+    This section refers to non-volumetric fog only.
+    It is possible to use both non-volumetric fog and :ref:`doc_volumetric_fog`
+    at the same time.
+
+Fog, as in real life, makes distant objects fade away into a uniform color.
+There are two kinds of fog in Godot:
+
+- **Depth Fog:** This one is applied based on the distance from the camera.
+- **Height Fog:** This one is applied to any objects below (or above) a certain
+  height, regardless of the distance from the camera.
+
+.. image:: img/environment_fog_depth_height.webp
+
+Both of these fog types can have their curves tweaked, making their transition more or less sharp.
+
+Two properties can be tweaked to make the fog effect more interesting:
+
+The first is **Sun Scatter**, which makes use of the DirectionalLight3D's color
+and energy in the current scene. When looking toward the directional light
+(usually a sun), the fog will be tinted according to the light's color to
+simulate the sunlight passing through the fog.
+
+The second is **Aerial Perspective**, which tints the fog color according to the
+sky color to better blend the sky with the background. Higher values will result
+in more tinting, with ``1.0`` fully replacing the regular fog color with aerial
+perspective. This can be used in large open world levels to provide a better
+sense of depth, or to avoid color discontinuities between the sky and fog colors.
+
+If both **Sun Scatter** and **Aerial Perspective** are greater than ``0.0``, sun
+scattering is applied on top of aerial perspective.
+
+.. note::
+
+    Fog can cause banding to appear on the viewport, especially at
+    higher density levels. See :ref:`doc_3d_rendering_limitations_color_banding`
+    for guidance on reducing banding.
+
+Volumetric Fog
+~~~~~~~~~~~~~~
+
+Volumetric fog provides a realistic fog effect to the scene, with fog color
+being affected by the lights that traverse the fog.
+
+.. seealso::
+
+  See :ref:`doc_volumetric_fog` for documentation on setting up volumetric fog.
 
 Adjustments
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 At the end of processing, Godot offers the possibility to do some standard
 image adjustments.
@@ -701,8 +897,13 @@ For example, modifying the LUT template in an image editor to give it a
 Camera attribute options
 ------------------------
 
+Godot has two kinds of camera attributes, physical and practical. When using
+CameraAttributesPhysical instead of CameraAttributesPractical, depth of field is
+automatically computed from the camera attributes' focus distance, focal length, and
+aperture. In addition, Frustum options are available.
+
 Depth of Field / Far Blur
-^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This effect simulates focal distance on cameras. It blurs objects behind
 a given range. It has an initial **Distance** with a **Transition** region
@@ -711,10 +912,11 @@ a given range. It has an initial **Distance** with a **Transition** region
 .. image:: img/environment_dof_far.webp
 
 The **Amount** parameter controls the amount of blur. For larger blurs, tweaking
-the **Quality** may be needed in order to avoid artifacts.
+the depth of field quality in the advanced project settings may be needed to
+avoid artifacts.
 
 Depth of Field / Near Blur
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This effect simulates focal distance on cameras. It blurs objects close
 to the camera (acts in the opposite direction as far blur).
@@ -723,7 +925,8 @@ It has an initial **Distance** with a **Transition** region (in world units):
 .. image:: img/environment_dof_near.webp
 
 The **Amount** parameter controls the amount of blur. For larger blurs, tweaking
-the **Quality** may be needed in order to avoid artifacts.
+the depth of field quality in the advanced project settings may be needed to
+avoid artifacts.
 
 It is common to use both blurs together to focus the viewer's attention on a
 given object, or create a so-called
@@ -731,22 +934,16 @@ given object, or create a so-called
 
 .. image:: img/environment_mixed_blur.webp
 
-.. note::
-
-    When using CameraAttributesPhysical instead of CameraAttributesPractical,
-    depth of field is automatically computed from the camera attributes' focus
-    distance, focal length, and aperture.
-
 Exposure
-^^^^^^^^
+~~~~~~~~
 
 This multiplies the overall scene brightness visible from the camera. Higher
 values result in a visually brighter scene.
 
 Auto Exposure
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
-*This feature is only available when using the Forward+ backend, not
+*This feature is only available when using the Forward+ renderer, not
 Mobile or Compatibility.*
 
 Even though, in most cases, lighting and texturing are heavily artist controlled,

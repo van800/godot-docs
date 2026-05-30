@@ -11,7 +11,7 @@ static mesh instancing.
 
 In Godot, this can be accomplished with a custom :ref:`Shader <class_Shader>` and
 a :ref:`MultiMeshInstance3D <class_MultiMeshInstance3D>`. Using the following technique you
-can render thousands of animated objects, even on low end hardware.
+can render thousands of animated objects, even on low-end hardware.
 
 We will start by animating one fish. Then, we will see how to extend that animation to
 thousands of fish.
@@ -26,7 +26,7 @@ Here is the fish we will be using for the example images, you can use any fish m
 
 .. image:: img/fish.png
 
-.. note:: The fish model in this tutorial is made by `QuaterniusDev <http://quaternius.com>`_ and is
+.. note:: The fish model in this tutorial is made by `QuaterniusDev <https://quaternius.com>`_ and is
           shared with a creative commons license. CC0 1.0 Universal (CC0 1.0) Public Domain
           Dedication https://creativecommons.org/publicdomain/zero/1.0/
 

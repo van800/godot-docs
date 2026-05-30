@@ -69,7 +69,10 @@ the project. While this can be useful in large projects, it
 resulted in an organization hassle for most developers.
 
 Because of this, assets are now transparently imported from within the project
-folder.
+folder. See :ref:`doc_import_process` for more details on how importing works
+in Godot.
+
+.. _doc_project_organization_ignoring_specific_folders:
 
 Ignoring specific folders
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,9 +83,12 @@ This can be useful to speed up the initial project importing.
 
 .. note::
 
-    To create a file whose name starts with a dot on Windows, you can use a
-    text editor such as Notepad++ or use the following command in a
-    command prompt: ``type nul > .gdignore``
+    To create a file whose name starts with a dot on Windows, place a dot
+    at both the beginning and end of the filename (``.gdignore.``). Windows
+    will automatically remove the trailing dot when you confirm the name.
+
+    Alternatively, you can use a text editor such as Notepad++ or use the
+    following command in a command prompt: ``type nul > .gdignore``
 
 Once the folder is ignored, resources in that folder can't be loaded anymore
 using the ``load()`` and ``preload()`` methods. Ignoring a folder will also
@@ -110,7 +116,9 @@ in general).
 
 On Windows 10, to further avoid mistakes related to case sensitivity,
 you can also make the project folder case-sensitive. After enabling the Windows
-Subsystem for Linux feature, run the following command in a PowerShell window::
+Subsystem for Linux feature, run the following command in a PowerShell window:
+
+::
 
     # To enable case-sensitivity:
     fsutil file setcasesensitiveinfo <path to project folder> enable
@@ -120,6 +128,8 @@ Subsystem for Linux feature, run the following command in a PowerShell window::
 
 If you haven't enabled the Windows Subsystem for Linux, you can enter the
 following line in a PowerShell window *running as Administrator* then reboot
-when asked::
+when asked:
+
+::
 
     Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux

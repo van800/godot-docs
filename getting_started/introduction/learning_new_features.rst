@@ -1,5 +1,3 @@
-:article_outdated: True
-
 .. Keep this page short and sweet! We want users to read it to the end, so they
    know where to find information, how to get help, and how to maximize chances
    of getting answers.
@@ -30,10 +28,10 @@ available functions and properties when programming. While the manual covers
 general features, concepts, and how to use the editor, the reference is all
 about using Godot's scripting API (Application Programming Interface). You can
 access it both online and offline. We recommend browsing the reference offline,
-from within the Godot editor. To do so, go to Help -> Search or press
+from within the Godot editor. To do so, go to Help -> Search Help or press
 :kbd:`F1`.
 
-.. image:: img/manual_class_reference_search.png
+.. image:: img/manual_class_reference_search.webp
 
 To browse it online, head to the manual's :ref:`Class Reference <doc_class_reference>`
 section.
@@ -58,8 +56,8 @@ A class reference's page tells you:
           <https://github.com/godotengine/godot-docs/issues>`_ GitHub repository
           to report it.
 
-You can Ctrl-click any underlined text like the name of a class, property,
-method, signal, or constant to jump to it.
+You can hold :kbd:`Ctrl` (macOS :kbd:`Cmd`) and then mouseover text like the name of a class, property,
+method, signal, or constant to underline it, then :kbd:`Ctrl + Click` (macOS :kbd:`Cmd + Click`) it to jump to it.
 
 Learning to think like a programmer
 -----------------------------------
@@ -68,12 +66,11 @@ Teaching programming foundations and how to think like a game developer is
 beyond the scope of Godot's documentation. If you're new to programming, we
 recommend two excellent free resources to get you started:
 
-1. Harvard university offers a free courseware to learn to program, `CS50
-   <https://cs50.harvard.edu/x/>`_. It will teach you programming
-   fundamentals, how code works, and how to think like a programmer. These
-   skills are essential to become a game developer and learn any game engine
-   efficiently. You can see this course as an investment that will save you time
-   and trouble when you learn to create games.
+1. GDQuest's *Learn GDScript From Zero* is a free and open source
+   interactive tutorial for absolute beginners to learn to program
+   with Godot's GDScript language. It is available as a
+   `desktop application <https://gdquest.itch.io/learn-godot-gdscript>`__
+   or `in the browser <https://gdquest.github.io/learn-gdscript>`__.
 
 2. If you prefer books, check out the free ebook `Automate The Boring Stuff With
    Python <https://automatetheboringstuff.com/>`_ by Al Sweigart.
@@ -87,7 +84,7 @@ help on one of the many `active
 communities <https://godotengine.org/community>`_.
 
 The best place to ask questions and find already answered ones is the
-official `Questions & Answers <https://godotengine.org/qa/>`_ site. These
+official `Godot Forum <https://forum.godotengine.org/>`_. These
 responses show up in search engine results and get saved, allowing other users
 to benefit from discussions on the platform. Once you have asked a question there,
 you can share its link on other social platforms. Before asking a question, be
@@ -123,10 +120,11 @@ information:
    Also, please don't take a picture with your phone, the low quality and screen
    reflections can make it hard to understand the image. Your operating system
    should have a built-in tool to take screenshots with the :kbd:`PrtSc` (Print
-   Screen) key.
+   Screen) key (macOS: use :kbd:`Cmd + Shift + 3` for a full screen shot,
+   `more information here <https://support.apple.com/guide/mac-help/take-a-screenshot-mh26782/mac>`_).
 
    Alternatively, you can use a program like `ShareX <https://getsharex.com/>`_
-   on Windows or `FlameShot <https://flameshot.org/>`_ on Linux.
+   on Windows, or `Flameshot <https://flameshot.org/>`_ on Windows/macOS/Linux.
 
 5. Sharing a video of your running game can also be really **useful to
    troubleshoot your game**. You can use programs like `OBS Studio

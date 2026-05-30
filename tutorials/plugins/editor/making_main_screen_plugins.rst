@@ -1,5 +1,3 @@
-:article_outdated: True
-
 .. _doc_making_main_screen_plugins:
 
 Making main screen plugins
@@ -10,7 +8,7 @@ What this tutorial covers
 
 Main screen plugins allow you to create
 new UIs in the central part of the editor, which appear next to the
-"2D", "3D", "Script", and "AssetLib" buttons. Such editor plugins are
+"2D", "3D", "Script", "Game", and "AssetLib" buttons. Such editor plugins are
 referred as "Main screen plugins".
 
 This tutorial leads you through the creation of a basic main screen plugin.
@@ -25,7 +23,7 @@ it in a folder called ``main_screen``, but you can use any name you'd like.
 
 The plugin script will come with ``_enter_tree()`` and ``_exit_tree()``
 methods, but for a main screen plugin we need to add a few extra methods.
-Add five extra methods such that the script looks like this:
+Add four extra methods such that the script looks like this:
 
 .. tabs::
  .. code-tab:: gdscript GDScript
@@ -55,7 +53,7 @@ Add five extra methods such that the script looks like this:
 
 
     func _get_plugin_icon():
-        return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+        return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 
  .. code-tab:: csharp
 
@@ -92,7 +90,7 @@ Add five extra methods such that the script looks like this:
 
         public override Texture2D _GetPluginIcon()
         {
-            return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+            return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
         }
     }
     #endif
@@ -124,7 +122,7 @@ Add a script to the button like this:
     extends Button
 
 
-    func _on_PrintHello_pressed():
+    func _on_print_hello_pressed():
         print("Hello from the main screen plugin!")
 
  .. code-tab:: csharp
@@ -134,7 +132,7 @@ Add a script to the button like this:
     [Tool]
     public partial class PrintHello : Button
     {
-        public void OnPrintHelloPressed()
+        private void OnPrintHelloPressed()
         {
             GD.Print("Hello from the main screen plugin!");
         }
@@ -168,7 +166,7 @@ Here is the full plugin script:
     func _enter_tree():
         main_panel_instance = MainPanel.instantiate()
         # Add the main panel to the editor's main viewport.
-        get_editor_interface().get_editor_main_screen().add_child(main_panel_instance)
+        EditorInterface.get_editor_main_screen().add_child(main_panel_instance)
         # Hide the main panel. Very much required.
         _make_visible(false)
 
@@ -193,7 +191,7 @@ Here is the full plugin script:
 
     func _get_plugin_icon():
         # Must return some kind of Texture for the icon.
-        return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
+        return EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
 
  .. code-tab:: csharp
 
@@ -210,7 +208,7 @@ Here is the full plugin script:
         {
             MainPanelInstance = (Control)MainPanel.Instantiate();
             // Add the main panel to the editor's main viewport.
-            GetEditorInterface().GetEditorMainScreen().AddChild(MainPanelInstance);
+            EditorInterface.Singleton.GetEditorMainScreen().AddChild(MainPanelInstance);
             // Hide the main panel. Very much required.
             _MakeVisible(false);
         }
@@ -244,7 +242,7 @@ Here is the full plugin script:
         public override Texture2D _GetPluginIcon()
         {
             // Must return some kind of Texture for the icon.
-            return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
+            return EditorInterface.Singleton.GetEditorTheme().GetIcon("Node", "EditorIcons");
         }
     }
     #endif
@@ -254,7 +252,7 @@ a reference to the scene, and we instance it into `main_panel_instance`.
 
 The ``_enter_tree()`` function is called before ``_ready()``. This is where
 we instance the main panel scene, and add them as children of specific parts
-of the editor. We use ``get_editor_interface().get_editor_main_screen()`` to
+of the editor. We use ``EditorInterface.get_editor_main_screen()`` to
 obtain the main editor screen and add our main panel instance as a child to it.
 We call the ``_make_visible(false)`` function to hide the main panel so
 it doesn't compete for space when first activating the plugin.

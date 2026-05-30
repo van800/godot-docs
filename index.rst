@@ -1,3 +1,5 @@
+:allow_comments: False
+
 Godot Docs – *master* branch
 ============================
 
@@ -29,8 +31,86 @@ to this documentation, we recommend that you read the
 :ref:`introduction page <doc_about_intro>` to get an overview of what this
 documentation has to offer.
 
-The table of contents in the sidebar should let you easily access the documentation
-for your topic of interest. You can also use the search function in the top-left corner.
+To begin reading the relevant documentation, select the tile that matches your profile:
+
+.. raw:: html
+
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 0.375rem;
+            grid-auto-flow: row;
+            grid-template-areas:
+            "new-to-game know-game-learn-godot"
+            "know-godot-learn-godot contribute-to-godot";
+        }
+
+        .grid-item {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+
+        .grid-item,
+        .grid-item:visited {
+            color: hsla(0, 0%, 100%, 0.9);
+        }
+
+        .grid-item:hover,
+        .grid-item:focus {
+            text-decoration: none;
+            filter: brightness(120%);
+        }
+
+        .grid-item:active {
+            filter: brightness(80%);
+        }
+
+        .new-to-game {
+            grid-area: new-to-game;
+            background-color: #166534;
+        }
+
+        .know-game-learn-godot {
+            grid-area: know-game-learn-godot;
+            background-color: #115e59;
+        }
+
+        .know-godot-learn-godot {
+            grid-area: know-godot-learn-godot;
+            background-color: #1e3a8a;
+        }
+
+        .contribute-to-godot {
+            grid-area: contribute-to-godot;
+            background-color: #831843;
+        }
+    </style>
+    <div class="grid-container">
+        <a class="grid-item new-to-game" href="about/introduction.html">
+            I've never made a game before,<br>
+            <strong>I want to make a game.</strong>
+        </a>
+        <a class="grid-item know-game-learn-godot" href="getting_started/step_by_step/index.html">
+            I know how to make a game,<br>
+            <strong>I want to know how to use Godot.</strong>
+            </a>
+        <a class="grid-item know-godot-learn-godot" href="tutorials/index.html">
+            I know how to use Godot,<br>
+            <strong>I want to learn more advanced Godot topics.</strong>
+        </a>
+        <a class="grid-item contribute-to-godot" href="https://contributing.godotengine.org/en/latest/organization/how_to_contribute.html">
+            I know how to use Godot,<br>
+            <strong>I want to contribute to Godot.</strong>
+        </a>
+    </div>
+    <br>
+
+You can also use the table of contents in the sidebar to easily access
+any section of the documentation for your topic of interest. You can
+also use the search function in the top-left corner.
 
 Get involved
 ------------
@@ -51,20 +131,11 @@ into your language, or talk to us on the ``#documentation`` channel on the
 Offline documentation
 ---------------------
 
-To browse the documentation offline, you can use the mirror of the documentation
-hosted on `DevDocs <https://devdocs.io/godot/>`__. To enable offline browsing on
-DevDocs, you need to:
-
-- Click the three dots in the top-left corner, choose **Preferences**.
-- Enable the desired version of the Godot documentation by checking the box
-  next to it in the sidebar.
-- Click the three dots in the top-left corner, choose **Offline data**.
-- Click the **Install** link next to the Godot documentation.
-
-You can also `download an HTML copy <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-html-master.zip>`__
-for offline reading (updated every Monday). Extract the ZIP archive then open
+To browse the documentation offline, you can download an HTML copy (updated every Monday): `stable <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-html-stable.zip>`__, `latest <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-html-master.zip>`__, `3.6 <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-html-3.6.zip>`__. Extract the ZIP archive then open
 the top-level ``index.html`` in a web browser.
 
+For mobile devices or e-readers, you can also download an ePub copy (updated every Monday): `stable <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-epub-stable.zip>`__, `latest <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-epub-master.zip>`__, `3.6 <https://nightly.link/godotengine/godot-docs/workflows/build_offline_docs/master/godot-docs-epub-3.6.zip>`__. Extract the ZIP archive then open
+the ``GodotEngine.epub`` file in an e-book reader application.
 
 .. Below is the main table-of-content tree of the documentation website.
    It is hidden on the page itself, but it makes up the sidebar for navigation.
@@ -76,12 +147,12 @@ the top-level ``index.html`` in a web browser.
    :name: sec-general
 
    about/introduction
-   about/faq
-   about/troubleshooting
    about/list_of_features
-   about/docs_changelog
-   about/release_policy
+   about/system_requirements
+   about/faq
    about/complying_with_licenses
+   about/release_policy
+   about/docs_changelog
 
 .. toctree::
    :hidden:
@@ -105,6 +176,7 @@ the top-level ``index.html`` in a web browser.
    :name: sec-tutorials
 
    tutorials/best_practices/index
+   tutorials/troubleshooting
    tutorials/editor/index
    tutorials/migrating/index
 
@@ -134,13 +206,15 @@ the top-level ``index.html`` in a web browser.
 .. toctree::
    :hidden:
    :maxdepth: 1
-   :caption: Contributing
-   :name: sec-contributing
+   :caption: Engine details
+   :name: sec-engine-details
 
-   contributing/ways_to_contribute
-   contributing/workflow/index
-   contributing/development/index
-   contributing/documentation/index
+   engine_details/architecture/index
+   engine_details/engine_api/index
+   engine_details/development/index
+   engine_details/editor/index
+   engine_details/class_reference/index
+   engine_details/file_formats/index
 
 
 .. toctree::

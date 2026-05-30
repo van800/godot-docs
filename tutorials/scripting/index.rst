@@ -1,3 +1,5 @@
+:allow_comments: False
+
 Scripting
 =========
 
@@ -8,8 +10,8 @@ Here, you will find information that is not already covered in more specific
 sections. For instance, to learn about inputs, we recommend you to read
 :ref:`Inputs <toc-learn-features-inputs>`.
 
-Programming languages
----------------------
+.. rubric:: Programming languages
+   :heading-level: 2
 
 The sections below each focus on a given programming language.
 
@@ -19,7 +21,10 @@ The sections below each focus on a given programming language.
 
    gdscript/index
    c_sharp/index
-   gdextension/index
+   cpp/index
+   other_languages
+
+.. _doc_scripting_core_features:
 
 Core features
 -------------
@@ -51,3 +56,4 @@ below will help you make the most of Godot.
    singletons_autoload
    scene_tree
    scene_unique_nodes
+   logging

@@ -9,14 +9,31 @@ Exporting for macOS
     If you're looking to compile editor or export template binaries from source instead,
     read :ref:`doc_compiling_for_macos`.
 
-macOS apps are exported as an ``.app`` bundle, a folder with a specific structure which stores the executable, libraries and all the project files.
-This bundle can be exported as is, packed in a ZIP archive or DMG disk image (only supported when exporting from a computer running macOS).
+macOS apps exported with the official export templates are exported as a single "Universal 2" binary ``.app`` bundle, a folder with a specific structure which stores the executable, libraries and all the project files.
+This bundle can be exported as is, packed in a ZIP archive, or packed in a DMG disk image (only supported when exporting from macOS).
+`Universal binaries for macOS support both Intel x86_64 and ARM64 (Apple Silicon) architectures <https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary>`__.
+
+.. warning::
+    Due to file system limitations, ``.app`` bundles exported from Windows lack the 
+    ``executable`` flag and won't run on macOS. Projects exported as ``.zip`` are not 
+    affected by this issue. To run ``.app`` bundles exported from Windows on macOS,
+    transfer the ``.app`` to a device running macOS or Linux and use the
+    ``chmod +x {executable_name}`` terminal command to add the ``executable`` permission.
+    The main executable located in the ``Contents/MacOS/`` subfolder, as well
+    as optional helper executables in the ``Contents/Helpers/`` subfolder, should have
+    the ``executable`` permission for the ``.app`` bundle to be valid.
 
 Requirements
 ------------
 
 -  Download the Godot export templates. Use the Godot menu: ``Editor > Manage Export Templates``.
 -  A valid and unique ``Bundle identifier`` should be set in the ``Application`` section of the export options.
+
+.. note::
+
+    A valid bundle ID can only contain alphanumeric characters, hyphens, and periods (``A-Z``, ``a-z``, ``0-9``, ``-``, and ``.``).
+    Apple recommends using reverse-DNS format (e.g. ``com.example.your-game``) of a domain you own, so that your bundle ID is guaranteed to be unique.
+    Bundle IDs are case-insensitive. See `CFBundleIdentifier <https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleidentifier>`__.
 
 .. warning::
 
@@ -81,7 +98,8 @@ If you do not have an Apple Developer ID Certificate
 - Select ``Built-in (ad-hoc only)`` in the ``Code Signing > Codesign`` option.
 - Select ``Disabled`` in the ``Notarization > Notarization`` option.
 
-In this case Godot will use a ad-hoc signature, which will make running an exported app easier for the end users, see the :ref:`Running Godot apps on macOS <doc_running_on_macos>` page for more information.
+In this case Godot will use an ad-hoc signature, which will make running an exported app easier for the end users,
+see the :ref:`Running Godot apps on macOS <doc_running_on_macos>` page for more information.
 
 Signing Options
 ~~~~~~~~~~~~~~~
@@ -213,3 +231,40 @@ See `App Sandbox <https://developer.apple.com/documentation/security/app_sandbox
 .. note::
 
     You can override default entitlements by selecting custom entitlements file, in this case all other entitlement are ignored.
+
+Environment variables
+---------------------
+
+You can use the following environment variables to set export options outside of
+the editor. During the export process, these override the values that you set in
+the export menu.
+
+.. list-table:: macOS export environment variables
+   :header-rows: 1
+
+   * - Export option
+     - Environment variable
+   * - Encryption / Encryption Key
+     - ``GODOT_SCRIPT_ENCRYPTION_KEY``
+   * - Options / Codesign / Certificate File
+     - ``GODOT_MACOS_CODESIGN_CERTIFICATE_FILE``
+   * - Options / Codesign / Certificate Password
+     - ``GODOT_MACOS_CODESIGN_CERTIFICATE_PASSWORD``
+   * - Options / Codesign / Provisioning Profile
+     - ``GODOT_MACOS_CODESIGN_PROVISIONING_PROFILE``
+   * - Options / Notarization / API UUID
+     - ``GODOT_MACOS_NOTARIZATION_API_UUID``
+   * - Options / Notarization / API Key
+     - ``GODOT_MACOS_NOTARIZATION_API_KEY``
+   * - Options / Notarization / API Key ID
+     - ``GODOT_MACOS_NOTARIZATION_API_KEY_ID``
+   * - Options / Notarization / Apple ID Name
+     - ``GODOT_MACOS_NOTARIZATION_APPLE_ID_NAME``
+   * - Options / Notarization / Apple ID Password
+     - ``GODOT_MACOS_NOTARIZATION_APPLE_ID_PASSWORD``
+
+Export options
+--------------
+
+You can find a full list of export options available in the
+:ref:`class_EditorExportPlatformMacOS` class reference.

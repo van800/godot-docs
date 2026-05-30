@@ -101,13 +101,18 @@ event scroll by in the output window. Here's an example of the output:
 ::
 
     A
-    InputEventMouseMotion : button_mask=0, position=(108, 108), relative=(26, 1), speed=(164.152496, 159.119843), pressure=(0), tilt=(0, 0)
-    InputEventMouseButton : button_index=BUTTON_LEFT, pressed=true, position=(108, 107), button_mask=1, doubleclick=false
-    InputEventMouseButton : button_index=BUTTON_LEFT, pressed=false, position=(108, 107), button_mask=0, doubleclick=false
-    S
-    F
+    Mouse motion at position ((971, 5)) with velocity ((0, 0))
+    Right Mouse Button
+    Mouse motion at position ((870, 243)) with velocity ((0.454937, -0.454937))
+    Left Mouse Button
+    Mouse Wheel Up
+    A
+    B
+    Shift
+    Alt+Shift
     Alt
-    InputEventMouseMotion : button_mask=0, position=(108, 107), relative=(0, -1), speed=(164.152496, 159.119843), pressure=(0), tilt=(0, 0)
+    Shift+T
+    Mouse motion at position ((868, 242)) with velocity ((-2.134768, 2.134768))
 
 As you can see, the results are very different for the different types of
 input. Key events are even printed as their key symbols. For example, let's
@@ -144,17 +149,26 @@ avoid this, make sure to test the event type first:
         }
     }
 
+.. _doc_input_examples_input_map:
+
 InputMap
 --------
 
 The :ref:`InputMap <class_InputMap>` is the most flexible way to handle a
 variety of inputs. You use this by creating named input *actions*, to which
 you can assign any number of input events, such as keypresses or mouse clicks.
-A new Godot project includes a number of default actions already defined. To
-see them, and to add your own, open Project -> Project Settings and select
+To see them, and to add your own, open Project -> Project Settings and select
 the InputMap tab:
 
-.. image:: img/inputs_inputmap.png
+.. image:: img/inputs_inputmap.webp
+
+.. tip::
+
+    A new Godot project includes a number of default actions already defined.
+    To see them, turn on :button:`Show Built-in Actions` in the InputMap dialog.
+
+    While not strictly required, it's recommended to use the ``snake_case`` naming
+    convention for input action names.
 
 Capturing actions
 ~~~~~~~~~~~~~~~~~
@@ -240,7 +254,7 @@ different when it's :kbd:`Shift + T`:
     func _input(event):
         if event is InputEventKey and event.pressed:
             if event.keycode == KEY_T:
-                if event.shift:
+                if event.shift_pressed:
                     print("Shift+T was pressed")
                 else:
                     print("T was pressed")
@@ -254,7 +268,7 @@ different when it's :kbd:`Shift + T`:
             switch (keyEvent.Keycode)
             {
                 case Key.T:
-                    GD.Print(keyEvent.Shift ? "Shift+T was pressed" : "T was pressed");
+                    GD.Print(keyEvent.ShiftPressed ? "Shift+T was pressed" : "T was pressed");
                     break;
             }
         }
@@ -275,19 +289,19 @@ Mouse buttons
 ~~~~~~~~~~~~~
 
 Capturing mouse buttons is very similar to handling key events. :ref:`@GlobalScope_MouseButton <enum_@GlobalScope_MouseButton>`
-contains a list of ``BUTTON_*`` constants for each possible button, which will
+contains a list of ``MOUSE_BUTTON_*`` constants for each possible button, which will
 be reported in the event's ``button_index`` property. Note that the scrollwheel
 also counts as a button - two buttons, to be precise, with both
-``BUTTON_WHEEL_UP`` and ``BUTTON_WHEEL_DOWN`` being separate events.
+``MOUSE_BUTTON_WHEEL_UP`` and ``MOUSE_BUTTON_WHEEL_DOWN`` being separate events.
 
 .. tabs::
  .. code-tab:: gdscript GDScript
 
     func _input(event):
         if event is InputEventMouseButton:
-            if event.button_index == BUTTON_LEFT and event.pressed:
+            if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
                 print("Left button was clicked at ", event.position)
-            if event.button_index == BUTTON_WHEEL_UP and event.pressed:
+            if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
                 print("Wheel up")
 
  .. code-tab:: csharp
@@ -329,7 +343,7 @@ node:
 
 
     func _input(event):
-        if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
+        if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
             if (event.position - $Sprite2D.position).length() < click_radius:
                 # Start dragging if the click is on the sprite.
                 if not dragging and event.pressed:

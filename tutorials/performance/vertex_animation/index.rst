@@ -1,4 +1,4 @@
-:article_outdated: True
+:allow_comments: False
 
 Animating thousands of objects
 ==============================

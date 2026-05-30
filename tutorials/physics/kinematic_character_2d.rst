@@ -47,7 +47,8 @@ Physics process
 ~~~~~~~~~~~~~~~
 
 To manage the logic of a kinematic body or character, it is always
-advised to use physics process, because it's called before physics step and its execution is
+advised to use :ref:`physics process <doc_idle_and_physics_processing>`,
+because it's called before physics step and its execution is
 in sync with physics server, also it is called the same amount of times
 per second, always. This makes physics and motion calculation work in a
 more predictable way than using regular process, which might have spikes
@@ -65,9 +66,9 @@ or lose precision if the frame rate is too high or too low.
 
     using Godot;
 
-    public partial class PhysicsScript : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
         }
     }
@@ -77,17 +78,18 @@ Scene setup
 ~~~~~~~~~~~
 
 To have something to test, here's the scene (from the tilemap tutorial):
-:download:`kbscene.zip <files/kbscene.zip>`. We'll be creating a new scene
-for the character. Use the robot sprite and create a scene like this:
+`kinematic_character_2d_starter.zip <https://github.com/godotengine/godot-docs-project-starters/releases/download/latest-4.x/kinematic_character_2d_starter.zip>`_.
+We'll be creating a new scene for the character. Use the robot sprite and
+create a scene like this:
 
-.. image:: img/kbscene.png
+.. image:: img/kbscene.webp
 
 You'll notice that there's a warning icon next to our CollisionShape2D node;
 that's because we haven't defined a shape for it. Create a new CircleShape2D
 in the shape property of CollisionShape2D. Click on <CircleShape2D> to go to the
 options for it, and set the radius to 30:
 
-.. image:: img/kbradius.png
+.. image:: img/kbradius.webp
 
 **Note: As mentioned before in the physics tutorial, the physics engine
 can't handle scale on most types of shapes (only collision polygons,
@@ -102,7 +104,7 @@ above should work as a base.
 Finally, instance that character scene in the tilemap, and make the
 map scene the main one, so it runs when pressing play.
 
-.. image:: img/kbinstance.png
+.. image:: img/kbinstance.webp
 
 Moving the kinematic character
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,9 +130,9 @@ So, let's move our sprite downwards until it hits the floor:
 
     using Godot;
 
-    public partial class PhysicsScript : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
             // Move down 1 pixel per physics frame
             MoveAndCollide(new Vector2(0, 1));
@@ -160,15 +162,17 @@ little more like a regular game character:
 
     using Godot;
 
-    public partial class PhysicsScript : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        const float gravity = 200.0f;
+        private const float Gravity = 200.0f;
 
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
-            velocity.y += delta * gravity;
+            var velocity = Velocity;
+            velocity.Y += (float)delta * Gravity;
+            Velocity = velocity;
 
-            var motion = velocity * delta;
+            var motion = velocity * (float)delta;
             MoveAndCollide(motion);
         }
     }
@@ -204,30 +208,34 @@ This adds basic support for walking when pressing left and right:
 
     using Godot;
 
-    public partial class PhysicsScript : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        const float gravity = 200.0f;
-        const int walkSpeed = 200;
+        private const float Gravity = 200.0f;
+        private const int WalkSpeed = 200;
 
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
-            velocity.y += delta * gravity;
+            var velocity = Velocity;
+
+            velocity.Y += (float)delta * Gravity;
 
             if (Input.IsActionPressed("ui_left"))
             {
-                velocity.x = -walkSpeed;
+                velocity.X = -WalkSpeed;
             }
             else if (Input.IsActionPressed("ui_right"))
             {
-                velocity.x = walkSpeed;
+                velocity.X = WalkSpeed;
             }
             else
             {
-                velocity.x = 0;
+                velocity.X = 0;
             }
 
+            Velocity = velocity;
+
             // "MoveAndSlide" already takes delta time into account.
-            MoveAndSlide(velocity, new Vector2(0, -1));
+            MoveAndSlide();
         }
     }
 

@@ -7,7 +7,7 @@ In this part, you're going to code the monsters, which we'll call mobs. In the
 next lesson, we'll spawn them randomly around the playable area.
 
 Let's design the monsters themselves in a new scene. The node structure is going
-to be similar to the ``Player.tscn`` scene.
+to be similar to the ``player.tscn`` scene.
 
 Create a scene with, once again, a :ref:`CharacterBody3D <class_CharacterBody3D>` node as its root. Name it
 ``Mob``. Add a child node :ref:`Node3D <class_Node3D>`, name it ``Pivot``. And drag and drop
@@ -33,7 +33,7 @@ Add a :ref:`CollisionShape3D <class_CollisionShape3D>`.
 
 In the *Inspector*, assign a *BoxShape3D* to the *Shape* property.
 
-.. image:: img/01.game_setup/08.create_box_shape3D.jpg
+.. image:: img/01.game_setup/08.create_box_shape3D.webp
 
 We should change its size to fit the 3D model better. You can do so
 interactively by clicking and dragging on the orange dots.
@@ -70,7 +70,7 @@ Godot has a node that detects when objects leave the screen,
     called pooling. It consists of pre-creating an array of objects and reusing
     them over and over.
 
-    When working with GDScript, you don't need to worry about this. The main
+    When working with GDScript, this usually isn't needed. The main
     reason to use pools is to avoid freezes with garbage-collected languages
     like C# or Lua. GDScript uses a different technique to manage memory,
     reference counting, which doesn't have that caveat. You can learn more
@@ -91,7 +91,7 @@ Coding the mob's movement
 
 Let's implement the monster's motion. We're going to do this in two steps.
 First, we'll write a script on the ``Mob`` that defines a function to initialize
-the monster. We'll then code the randomized spawn mechanism in the ``Main.tscn`` scene
+the monster. We'll then code the randomized spawn mechanism in the ``main.tscn`` scene
 and call the function from there.
 
 Attach a script to the ``Mob``.
@@ -161,7 +161,7 @@ between ``-PI / 4`` radians and ``PI / 4`` radians.
         # We position the mob by placing it at start_position
         # and rotate it towards player_position, so it looks at the player.
         look_at_from_position(start_position, player_position, Vector3.UP)
-        # Rotate this mob randomly within range of -90 and +90 degrees,
+        # Rotate this mob randomly within range of -45 and +45 degrees,
         # so that it doesn't move directly towards the player.
         rotate_y(randf_range(-PI / 4, PI / 4))
 
@@ -173,7 +173,7 @@ between ``-PI / 4`` radians and ``PI / 4`` radians.
         // We position the mob by placing it at startPosition
         // and rotate it towards playerPosition, so it looks at the player.
         LookAtFromPosition(startPosition, playerPosition, Vector3.Up);
-        // Rotate this mob randomly within range of -90 and +90 degrees,
+        // Rotate this mob randomly within range of -45 and +45 degrees,
         // so that it doesn't move directly towards the player.
         RotateY((float)GD.RandRange(-Mathf.Pi / 4.0, Mathf.Pi / 4.0));
     }
@@ -216,13 +216,8 @@ Leaving the screen
 We still have to destroy the mobs when they leave the screen. To do so, we'll
 connect our :ref:`VisibleOnScreenNotifier3D <class_VisibleOnScreenNotifier3D>` node's ``screen_exited`` signal to the ``Mob``.
 
-Head back to the 3D viewport by clicking on the *3D* label at the top of the
-editor. You can also press :kbd:`Ctrl + F2` (:kbd:`Alt + 2` on macOS).
-
-|image8|
-
 Select the :ref:`VisibleOnScreenNotifier3D <class_VisibleOnScreenNotifier3D>` node and on the right side of the interface,
-navigate to the *Node* dock. Double-click the ``screen_exited()`` signal.
+navigate to the *Signals* dock. Double-click the ``screen_exited()`` signal.
 
 |image9|
 
@@ -230,19 +225,19 @@ Connect the signal to the ``Mob``
 
 |image10|
 
-This will take you back to the script editor and add a new function for you,
+This will add a new function for you in your mob script,
 ``_on_visible_on_screen_notifier_3d_screen_exited()``. From it, call the ``queue_free()``
-method. This function destroy the instance it's called on.
+method. This function destroys the instance it's called on.
 
 .. tabs::
  .. code-tab:: gdscript GDScript
 
-   func _on_VisibilityNotifier_screen_exited():
+   func _on_visible_on_screen_notifier_3d_screen_exited():
        queue_free()
 
  .. code-tab:: csharp
 
-    // We also specified this function name in PascalCase in the editor's connection window
+    // We also specified this function name in PascalCase in the editor's connection window.
     private void OnVisibilityNotifierScreenExited()
     {
         QueueFree();
@@ -252,7 +247,7 @@ method. This function destroy the instance it's called on.
 Our monster is ready to enter the game! In the next part, you will spawn
 monsters in the game level.
 
-Here is the complete ``Mob.gd`` script for reference.
+Here is the complete ``mob.gd`` script for reference.
 
 .. tabs::
  .. code-tab:: gdscript GDScript
@@ -272,7 +267,7 @@ Here is the complete ``Mob.gd`` script for reference.
         # We position the mob by placing it at start_position
         # and rotate it towards player_position, so it looks at the player.
         look_at_from_position(start_position, player_position, Vector3.UP)
-        # Rotate this mob randomly within range of -90 and +90 degrees,
+        # Rotate this mob randomly within range of -45 and +45 degrees,
         # so that it doesn't move directly towards the player.
         rotate_y(randf_range(-PI / 4, PI / 4))
 
@@ -311,7 +306,7 @@ Here is the complete ``Mob.gd`` script for reference.
             // We position the mob by placing it at startPosition
             // and rotate it towards playerPosition, so it looks at the player.
             LookAtFromPosition(startPosition, playerPosition, Vector3.Up);
-            // Rotate this mob randomly within range of -90 and +90 degrees,
+            // Rotate this mob randomly within range of -45 and +45 degrees,
             // so that it doesn't move directly towards the player.
             RotateY((float)GD.RandRange(-Mathf.Pi / 4.0, Mathf.Pi / 4.0));
 
@@ -324,20 +319,19 @@ Here is the complete ``Mob.gd`` script for reference.
             Velocity = Velocity.Rotated(Vector3.Up, Rotation.Y);
         }
 
-        // We also specified this function name in PascalCase in the editor's connection window
+        // We also specified this function name in PascalCase in the editor's connection window.
         private void OnVisibilityNotifierScreenExited()
         {
             QueueFree();
         }
     }
 
-.. |image0| image:: img/04.mob_scene/01.initial_three_nodes.png
-.. |image1| image:: img/04.mob_scene/02.add_child_node.png
-.. |image2| image:: img/04.mob_scene/03.scene_with_collision_shape.png
+.. |image0| image:: img/04.mob_scene/01.initial_three_nodes.webp
+.. |image1| image:: img/04.mob_scene/02.add_child_node.webp
+.. |image2| image:: img/04.mob_scene/03.scene_with_collision_shape.webp
 .. |image4| image:: img/04.mob_scene/05.box_final_size.png
-.. |image5| image:: img/04.mob_scene/06.visibility_notifier.png
+.. |image5| image:: img/04.mob_scene/06.visibility_notifier.webp
 .. |image6| image:: img/04.mob_scene/07.visibility_notifier_bbox_resized.png
-.. |image7| image:: img/04.mob_scene/08.mob_attach_script.png
-.. |image8| image:: img/04.mob_scene/09.switch_to_3d_workspace.png
+.. |image7| image:: img/04.mob_scene/08.mob_attach_script.webp
 .. |image9| image:: img/04.mob_scene/10.node_dock.webp
 .. |image10| image:: img/04.mob_scene/11.connect_signal.webp

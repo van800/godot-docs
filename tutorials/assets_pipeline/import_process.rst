@@ -47,7 +47,7 @@ be discarded. After clicking **Reimport**, the chosen parameters will only be
 used for this asset and on future reimports.
 
 Changing the import parameters of several assets at the same time is also
-possible. Simply select all of them together in the resources dock and the
+possible. Select all of them together in the FileSystem dock and the
 exposed parameters will apply to all of them when reimporting.
 
 Reimporting multiple assets
@@ -73,6 +73,19 @@ When the MD5 checksum of the source asset changes, Godot will perform an
 automatic reimport of it, applying the preset configured for that specific
 asset.
 
+Ignoring specific folders
+-------------------------
+
+Sometimes, you have files that you don't want to be imported by Godot, such as
+images used in a game's press kit or promotional materials. You can place those
+files in a folder that you instruct Godot to ignore. Ignoring a folder ensures
+it is not imported by Godot; this also hides the folder from the FileSystem
+dock. Ignoring a folder also results in its contents not being exported with the
+project, therefore reducing the exported PCK size.
+
+See :ref:`doc_project_organization_ignoring_specific_folders`
+in the project organization tutorial for details.
+
 Files generated
 ---------------
 
@@ -84,7 +97,7 @@ files contain important metadata.
 
 ::
 
-    $ ls
+    ls
     example.png
     example.png.import
     project.godot
@@ -94,7 +107,7 @@ Additionally, extra assets will be present in the hidden
 
 ::
 
-    $ ls .godot/imported
+    ls .godot/imported
     example.png-218a8f2b3041327d8a5756f3a245f83b.ctex
     example.png-218a8f2b3041327d8a5756f3a245f83b.md5
 
@@ -115,10 +128,11 @@ select the relevant type of resource desired then click **Reimport**:
 
 .. image:: img/import_process_changing_import_type.webp
 
-.. note::
+Select ``Keep File (exported as is)`` as resource type to skip file import, files
+with this resource type will be preserved as is during project export.
 
-    For technical reasons, the editor must be restarted after changing an import
-    type in the Import dock.
+Select ``Skip File (not exported)`` as resource type to skip file import and ignore
+file during project export.
 
 Changing default import parameters
 ----------------------------------

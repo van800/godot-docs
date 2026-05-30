@@ -25,6 +25,10 @@ engine physics properties, like gravity or friction. While this means that you
 have to write some code to create their behavior, it also means you have more
 precise control over how they move and react.
 
+Despite its name ``CharacterBody2D``, it can also be used for other physics objects that require
+precise manual movement logic and detailed collision information, such as moving
+platforms or complex projectiles.
+
 .. note:: This document assumes you're familiar with Godot's various physics
           bodies. Please read :ref:`doc_physics_introduction` first, for an overview
           of the physics options.
@@ -69,10 +73,6 @@ move_and_slide
 The ``move_and_slide()`` method is intended to simplify the collision
 response in the common case where you want one body to slide along the other.
 It is especially useful in platformers or top-down games, for example.
-
-.. tip:: ``move_and_slide()`` automatically calculates frame-based movement
-         using ``delta``. Do *not* multiply your velocity vector by ``delta``
-         before passing it to ``move_and_slide()``.
 
 When calling ``move_and_slide()``, the function uses a number of node properties
 to calculate its slide behavior. These properties can be found in the Inspector,
@@ -191,8 +191,9 @@ the same collision response:
     var collision = MoveAndCollide(Velocity * (float)delta);
     if (collision != null)
     {
-        velocity = velocity.Slide(collision.GetNormal());
+        Velocity = Velocity.Slide(collision.GetNormal());
     }
+
     // using MoveAndSlide
     MoveAndSlide();
 
@@ -218,15 +219,15 @@ Examples
 --------
 
 To see these examples in action, download the sample project:
-:download:`using_kinematic2d.zip <files/using_kinematic2d.zip>`.
+`character_body_2d_starter.zip <https://github.com/godotengine/godot-docs-project-starters/releases/download/latest-4.x/character_body_2d_starter.zip>`_
 
 Movement and walls
 ~~~~~~~~~~~~~~~~~~
 
-If you've downloaded the sample project, this example is in "BasicMovement.tscn".
+If you've downloaded the sample project, this example is in "basic_movement.tscn".
 
 For this example, add a ``CharacterBody2D`` with two children: a ``Sprite2D`` and a
-``CollisionShape2D``. Use the Godot "icon.png" as the Sprite2D's texture (drag it
+``CollisionShape2D``. Use the Godot "icon.svg" as the Sprite2D's texture (drag it
 from the Filesystem dock to the *Texture* property of the ``Sprite2D``). In the
 ``CollisionShape2D``'s *Shape* property, select "New RectangleShape2D" and
 size the rectangle to fit over the sprite image.
@@ -254,14 +255,14 @@ Attach a script to the CharacterBody2D and add the following code:
 
     using Godot;
 
-    public partial class CBExample : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        public int Speed = 300;
+        private int _speed = 300;
 
         public void GetInput()
         {
             Vector2 inputDir = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
-            Velocity = inputDir * Speed;
+            Velocity = inputDir * _speed;
         }
 
         public override void _PhysicsProcess(double delta)
@@ -275,7 +276,7 @@ Attach a script to the CharacterBody2D and add the following code:
 Run this scene and you'll see that ``move_and_collide()`` works as expected, moving
 the body along the velocity vector. Now let's see what happens when you add
 some obstacles. Add a :ref:`StaticBody2D <class_StaticBody2D>` with a
-rectangular collision shape. For visibility, you can use a sprite, a
+rectangular collision shape. For visibility, you can use a Sprite2D, a
 Polygon2D, or turn on "Visible Collision Shapes" from the "Debug" menu.
 
 Run the scene again and try moving into the obstacle. You'll see that the ``CharacterBody2D``
@@ -295,14 +296,14 @@ to get the behavior you want.
 Bouncing/reflecting
 ~~~~~~~~~~~~~~~~~~~
 
-What if you don't want a sliding collision response? For this example ("BounceandCollide.tscn"
+What if you don't want a sliding collision response? For this example ("bounce_and_collide.tscn"
 in the sample project), we have a character shooting bullets and we want the bullets to
 bounce off the walls.
 
 This example uses three scenes. The main scene contains the Player and Walls.
 The Bullet and Wall are separate scenes so that they can be instanced.
 
-The Player is controlled by the `w` and `s` keys for forward and back. Aiming
+The Player is controlled by the ``w`` and ``s`` keys for forward and back. Aiming
 uses the mouse pointer. Here is the code for the Player, using ``move_and_slide()``:
 
 .. tabs::
@@ -310,7 +311,7 @@ uses the mouse pointer. Here is the code for the Player, using ``move_and_slide(
 
     extends CharacterBody2D
 
-    var Bullet = preload("res://Bullet.tscn")
+    var Bullet = preload("res://bullet.tscn")
     var speed = 200
 
     func get_input():
@@ -338,16 +339,16 @@ uses the mouse pointer. Here is the code for the Player, using ``move_and_slide(
 
     using Godot;
 
-    public partial class CBExample : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        private PackedScene _bullet = (PackedScene)GD.Load("res://Bullet.tscn");
-        public int Speed = 200;
+        private PackedScene _bullet = GD.Load<PackedScene>("res://Bullet.tscn");
+        private int _speed = 200;
 
         public void GetInput()
         {
             // Add these actions in Project Settings -> Input Map.
             float inputDir = Input.GetAxis("backward", "forward");
-            Velocity = Transform.x * inputDir * Speed;
+            Velocity = Transform.X * inputDir * _speed;
             if (Input.IsActionPressed("shoot"))
             {
                 Shoot();
@@ -407,7 +408,7 @@ And the code for the Bullet:
 
     public partial class Bullet : CharacterBody2D
     {
-        public int Speed = 750;
+        public int _speed = 750;
 
         public void Start(Vector2 position, float direction)
         {
@@ -429,7 +430,7 @@ And the code for the Bullet:
             }
         }
 
-        public void OnVisibilityNotifier2DScreenExited()
+        private void OnVisibilityNotifier2DScreenExited()
         {
             // Deletes the bullet when it exits the screen.
             QueueFree();
@@ -439,7 +440,7 @@ And the code for the Bullet:
 
 The action happens in ``_physics_process()``. After using ``move_and_collide()``, if a
 collision occurs, a ``KinematicCollision2D`` object is returned (otherwise, the return
-is ``Nil``).
+is ``null``).
 
 If there is a returned collision, we use the ``normal`` of the collision to reflect
 the bullet's ``velocity`` with the ``Vector2.bounce()`` method.
@@ -472,13 +473,9 @@ Here's the code for the player body:
     var speed = 300.0
     var jump_speed = -400.0
 
-    # Get the gravity from the project settings so you can sync with rigid body nodes.
-    var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
-
-
     func _physics_process(delta):
         # Add the gravity.
-        velocity.y += gravity * delta
+        velocity.y += get_gravity() * delta
 
         # Handle Jump.
         if Input.is_action_just_pressed("jump") and is_on_floor():
@@ -494,28 +491,29 @@ Here's the code for the player body:
 
     using Godot;
 
-    public partial class CBExample : CharacterBody2D
+    public partial class MyCharacterBody2D : CharacterBody2D
     {
-        public float Speed = 100.0f;
-        public float JumpSpeed = -400.0f;
+        private float _speed = 100.0f;
+        private float _jumpSpeed = -400.0f;
 
         // Get the gravity from the project settings so you can sync with rigid body nodes.
-        public float Gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 
         public override void _PhysicsProcess(double delta)
         {
             Vector2 velocity = Velocity;
 
             // Add the gravity.
-            velocity.Y += Gravity * (float)delta;
+            velocity.Y += GetGravity() * (float)delta;
 
             // Handle jump.
             if (Input.IsActionJustPressed("jump") && IsOnFloor())
-                velocity.Y = JumpSpeed;
+            {
+                velocity.Y = _jumpSpeed;
+            }
 
             // Get the input direction.
-            Vector2 direction = Input.GetAxis("ui_left", "ui_right");
-            velocity.X = direction * Speed;
+            float direction = Input.GetAxis("ui_left", "ui_right");
+            velocity.X = direction * _speed;
 
             Velocity = velocity;
             MoveAndSlide();

@@ -1,21 +1,8 @@
-.. _doc_c_sharp:
-
 C# basics
 =========
 
 Introduction
 ------------
-
-.. warning::
-
-    .NET support has been heavily modified between Godot 3 and 4. As such, you
-    may still run into some issues, or find spots where the documentation could
-    be improved.
-
-    Please report issues with C# in Godot on the
-    `engine GitHub page <https://github.com/godotengine/godot/issues>`_,
-    and any documentation issues on the
-    `documentation GitHub page <https://github.com/godotengine/godot-docs/issues>`_.
 
 This page provides a brief introduction to C#, both what it is and
 how to use it in Godot. Afterwards, you may want to look at
@@ -25,7 +12,14 @@ and (re)visit the :ref:`Scripting section <doc_scripting>` of the
 step-by-step tutorial.
 
 C# is a high-level programming language developed by Microsoft. In Godot,
-it is implemented with .NET 6.0.
+it is implemented with the modern .NET runtime.
+
+.. attention::
+
+    Projects written in C# using Godot 4 currently cannot be exported to the web
+    platform. To use C# on the web platform, consider Godot 3 instead.
+    Android and iOS platform support is available as of Godot 4.2, but is
+    experimental and :ref:`some limitations apply <doc_c_sharp_platforms>`.
 
 .. note::
 
@@ -39,7 +33,7 @@ it is implemented with .NET 6.0.
 Prerequisites
 -------------
 
-Godot bundles the parts of .NET needed to run already compiled games.
+Godot bundles the parts of .NET needed to run already-compiled games.
 However, Godot does not bundle the tools required to build and compile
 games, such as MSBuild and the C# compiler. These are
 included in the .NET SDK, and need to be installed separately.
@@ -49,6 +43,7 @@ version of Godot.
 
 Download and install the latest stable version of the SDK from the
 `.NET download page <https://dotnet.microsoft.com/download>`__.
+Godot 4.5 requires .NET 8 or later, but exporting to Android requires .NET 9 or later.
 
 .. important::
 
@@ -59,19 +54,20 @@ If you are building Godot from source, make sure to follow the steps to enable
 .NET support in your build as outlined in the :ref:`doc_compiling_with_dotnet`
 page.
 
+.. _doc_c_sharp_setup_external_editor:
+
 Configuring an external editor
 ------------------------------
 
 C# support in Godot's built-in script editor is minimal. Consider using an
 external IDE or editor, such as  `Visual Studio Code <https://code.visualstudio.com/>`__
-or MonoDevelop. These provide autocompletion, debugging, and other
+or `Visual Studio <https://visualstudio.microsoft.com/>`__. These provide autocompletion, debugging, and other
 useful features for C#. To select an external editor in Godot,
 click on **Editor → Editor Settings** and scroll down to
 **Dotnet**. Under **Dotnet**, click on **Editor**, and select your
 external editor of choice. Godot currently supports the following
 external editors:
 
-- Visual Studio 2019
 - Visual Studio 2022
 - Visual Studio Code
 - MonoDevelop
@@ -93,7 +89,7 @@ In Godot's **Editor → Editor Settings** menu:
 In Rider:
 
 - Set **MSBuild version** to **.NET Core**.
-- Install the **Godot support** plugin.
+- If you are using a Rider version below 2024.2, install the **Godot support** plugin. This functionality is now built into Rider.
 
 Visual Studio Code
 ~~~~~~~~~~~~~~~~~~
@@ -108,20 +104,54 @@ In Godot's **Editor → Editor Settings** menu:
 In Visual Studio Code:
 
 - Install the `C# <https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp>`__ extension.
-- Install the `Mono Debug <https://marketplace.visualstudio.com/items?itemName=ms-vscode.mono-debug>`__ extension.
-- Install the `C# Tools for Godot <https://marketplace.visualstudio.com/items?itemName=neikeq.godot-csharp-vscode>`__ extension.
 
-.. note::
+To configure a project for debugging, you need a ``tasks.json`` and ``launch.json`` file in
+the ``.vscode`` folder with the necessary configuration.
 
-    If you are using Linux you need to install the `Mono SDK <https://www.mono-project.com/download/stable/#download-lin>`__
-    for the C# tools plugin to work.
+Here is an example ``launch.json``:
 
-To configure a project for debugging open the Godot project folder in VS Code.
-Go to the Run tab and click on **Add Configuration...**. Select **C# Godot**
-from the dropdown menu. Open the ``tasks.json`` and ``launch.json`` files that
-were created. Change the executable setting in ``launch.json`` and  command
-settings in ``tasks.json`` to your Godot executable path. Now, when you start
-the debugger in VS Code, your Godot project will run.
+.. code-block:: json
+
+    {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "Play",
+                "type": "coreclr",
+                "request": "launch",
+                "preLaunchTask": "build",
+                "program": "${env:GODOT4}",
+                "args": [],
+                "cwd": "${workspaceFolder}",
+                "stopAtEntry": false,
+            }
+        ]
+    }
+
+For this launch configuration to work, you need to either setup a GODOT4
+environment variable that points to the Godot executable, or replace ``program``
+parameter with the path to the Godot executable.
+
+Here is an example ``tasks.json``:
+
+.. code-block:: json
+
+    {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "build",
+                "command": "dotnet",
+                "type": "process",
+                "args": [
+                    "build"
+                ],
+                "problemMatcher": "$msCompile"
+            }
+        ]
+    }
+
+Now, when you start the debugger in Visual Studio Code, your Godot project will run.
 
 Visual Studio (Windows only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,24 +162,13 @@ Visual Studio will include the required SDKs if you have the correct
 workloads selected, so you don't need to manually install the things
 listed in the "Prerequisites" section.
 
-While installing Visual Studio, select these workloads:
+While installing Visual Studio, select this workload:
 
-- Mobile development with .NET
-- .NET Core cross-platform development
+- .NET desktop development
 
 In Godot's **Editor → Editor Settings** menu:
 
 - Set **Dotnet** -> **Editor** -> **External Editor** to **Visual Studio**.
-
-Next, you can download the Godot Visual Studio extension from github
-`here <https://github.com/godotengine/godot-csharp-visualstudio/releases>`__.
-Double click on the downloaded file and follow the installation process.
-
-.. note:: The option to debug your game in Visual Studio may not appear after
-          installing the extension. To enable debugging, there is a
-          `workaround for Visual Studio 2019 <https://github.com/godotengine/godot-csharp-visualstudio/issues/10#issuecomment-720153256>`__.
-          There is
-          `a separate issue about this problem in Visual Studio 2022 <https://github.com/godotengine/godot-csharp-visualstudio/issues/28>`__.
 
 .. note:: If you see an error like "Unable to find package Godot.NET.Sdk",
           your NuGet configuration may be incorrect and need to be fixed.
@@ -158,6 +177,19 @@ Double click on the downloaded file and follow the installation process.
           In a file explorer window, go to ``%AppData%\NuGet``. Rename or delete
           the ``NuGet.Config`` file. When you build your Godot project again,
           the file will be automatically created with default values.
+
+To debug your C# scripts using Visual Studio, open the .sln file that is generated
+after opening the first C# script in the editor. In the **Debug** menu, go to the
+**Debug Properties** menu item for your project. Click the **Create a new profile**
+button and choose **Executable**. In the **Executable** field, browse to the path
+of the C# version of the Godot editor, or type ``%GODOT4%`` if you have created an
+environment variable for the Godot executable path. It must be the path to the main Godot
+executable, not the 'console' version. For the **Working Directory**, type a single period,
+``.``, meaning the current directory. Also check the **Enable native code debugging**
+checkbox. You may now close this window, click downward arrow on the debug profile
+dropdown, and select your new launch profile. Hit the green start button, and your
+game will begin playing in debug mode.
+
 
 Creating a C# script
 --------------------
@@ -228,6 +260,8 @@ class reference pages for
 
     *"Cannot find class XXX for script res://XXX.cs"*
 
+.. _doc_c_sharp_general_differences:
+
 General differences between C# and GDScript
 -------------------------------------------
 
@@ -241,10 +275,10 @@ For more information, see the :ref:`doc_c_sharp_differences` page.
 
     You need to (re)build the project assemblies whenever you want to see new
     exported variables or signals in the editor. This build can be manually
-    triggered by clicking the word **Build** in the top right corner of the
-    editor. You can also click **MSBuild** at the bottom of the editor window
-    to reveal the MSBuild panel, then click the **Build** button to reveal a
-    dropdown, then click the **Build Solution** option.
+    triggered by clicking the **Build** button in the top right corner of the
+    editor.
+
+    .. image:: img/build_dotnet.webp
 
     You will also need to rebuild the project assemblies to apply changes in
     "tool" scripts.
@@ -288,7 +322,7 @@ objects, e.g. when trying to change the X coordinate of a ``Node2D``:
 
     public partial class MyNode2D : Node2D
     {
-        public override _Ready()
+        public override void _Ready()
         {
             Position.X = 100.0f;
             // CS1612: Cannot modify the return value of 'Node2D.Position' because
@@ -322,11 +356,10 @@ You can read more about this error on the `C# language reference <https://learn.
 Performance of C# in Godot
 --------------------------
 
-According to some preliminary `benchmarks <https://github.com/cart/godot3-bunnymark>`_,
-the performance of C# in Godot — while generally in the same order of magnitude
-— is roughly **~4×** that of GDScript in some naive cases. C++ is still
-a little faster; the specifics are going to vary according to your use case.
-GDScript is likely fast enough for most general scripting workloads.
+.. seealso::
+
+    For a performance comparison of the languages Godot supports,
+    see :ref:`doc_faq_which_programming_language_is_fastest`.
 
 Most properties of Godot C# objects that are based on ``GodotObject``
 (e.g. any ``Node`` like ``Control`` or ``Node3D`` like ``Camera3D``) require native (interop) calls as they talk to
@@ -387,8 +420,8 @@ the ``.csproj`` file located in the project root:
         ...
     </Project>
 
-As of Godot 3.2.3, Godot automatically downloads and sets up newly added NuGet
-packages the next time it builds the project.
+Godot automatically downloads and sets up newly added NuGet packages
+the next time it builds the project.
 
 Profiling your C# code
 ----------------------

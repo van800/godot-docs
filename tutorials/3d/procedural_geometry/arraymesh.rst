@@ -40,7 +40,7 @@ See :ref:`Mesh.ArrayType <enum_Mesh_ArrayType>` for a full list.
     
     * - 2
       - ``ARRAY_TANGENT``
-      - :ref:`PackedFloat32Array <class_PackedFloat32Array>` of groups of 4 floats. The first 3 floats determine the tangent, and the last float the binormal 
+      - :ref:`PackedFloat32Array <class_PackedFloat32Array>` or :ref:`PackedFloat64Array <class_PackedFloat64Array>` of groups of 4 floats. The first 3 floats determine the tangent, and the last float the binormal 
         direction as -1 or 1.
     
     * - 3
@@ -61,15 +61,14 @@ See :ref:`Mesh.ArrayType <enum_Mesh_ArrayType>` for a full list.
     
     * - 11
       - ``ARRAY_WEIGHTS``
-      - :ref:`PackedFloat32Array <class_PackedFloat32Array>` of groups of 4 floats. Each float lists the amount of weight the corresponding bone in ``ARRAY_BONES`` has on a given vertex.
+      - :ref:`PackedFloat32Array <class_PackedFloat32Array>` or :ref:`PackedFloat64Array <class_PackedFloat64Array>` of groups of 4 floats. Each float lists the amount of weight the corresponding bone in ``ARRAY_BONES`` has on a given vertex.
     
     * - 12
       - ``ARRAY_INDEX``
       - :ref:`PackedInt32Array <class_PackedInt32Array>`
 
 In most cases when creating a mesh, we define it by its vertex positions. So usually, the array of vertices (at index 0) is required, while the index array (at index 12) is optional and
-will only be used if included. It is also possible to create a mesh with only the index array and no vertex array, but that's beyond the scope of this tutorial. In fact, we won't use the
-index array at all.
+will only be used if included. It is also possible to create a mesh with only the index array and no vertex array, but that's beyond the scope of this tutorial.
 
 All the other arrays carry information about the vertices. They are optional and will only be used if included. Some of these arrays (e.g. ``ARRAY_COLOR``)
 use one entry per vertex to provide extra information about vertices. They must have the same size as the vertex array. Other arrays (e.g. ``ARRAY_TANGENT``) use
@@ -95,7 +94,7 @@ Under ``_ready()``, create a new Array.
   
   .. code-tab:: csharp C#
 
-    var surfaceArray = new Godot.Collections.Array();
+    Godot.Collections.Array surfaceArray = [];
 
 This will be the array that we keep our surface information in - it will hold
 all the arrays of data that the surface needs. Godot will expect it to be of
@@ -109,7 +108,7 @@ size ``Mesh.ARRAY_MAX``, so resize it accordingly.
   
  .. code-tab:: csharp C#
 
-    var surfaceArray = new Godot.Collections.Array();
+    Godot.Collections.Array surfaceArray = [];
     surfaceArray.Resize((int)Mesh.ArrayType.Max);
 
 Next create the arrays for each data type you will use.
@@ -124,10 +123,10 @@ Next create the arrays for each data type you will use.
 
  .. code-tab:: csharp C#
 
-    var verts = new List<Vector3>();
-    var uvs = new List<Vector2>();
-    var normals = new List<Vector3>();
-    var indices = new List<int>();
+    List<Vector3> verts = [];
+    List<Vector2> uvs = [];
+    List<Vector3> normals = [];
+    List<int> indices = [];
 
 Once you have filled your data arrays with your geometry you can create a mesh
 by adding each array to ``surface_array`` and then committing to the mesh.
@@ -197,14 +196,14 @@ Put together, the full code looks like:
     {
         public override void _Ready()
         {
-            var surfaceArray = new Godot.Collections.Array();
+            Godot.Collections.Array surfaceArray = [];
             surfaceArray.Resize((int)Mesh.ArrayType.Max);
 
             // C# arrays cannot be resized or expanded, so use Lists to create geometry.
-            var verts = new List<Vector3>();
-            var uvs = new List<Vector2>();
-            var normals = new List<Vector3>();
-            var indices = new List<int>();
+            List<Vector3> verts = [];
+            List<Vector2> uvs = [];
+            List<Vector3> normals = [];
+            List<int> indices = [];
 
             /***********************************
             * Insert code here to generate mesh.
@@ -228,9 +227,230 @@ Put together, the full code looks like:
 
 
 The code that goes in the middle can be whatever you want. Below we will present some
-example code for generating a sphere.
+example code for generating shapes, starting with a rectangle.
 
-Generating geometry
+Generating a rectangle
+----------------------
+
+Since we are using ``Mesh.PRIMITIVE_TRIANGLES`` to render, we will construct a rectangle
+with triangles.
+
+A rectangle is formed by two triangles sharing four vertices. For our example, we will create
+a rectangle with its top left point at ``(0, 0, 0)`` with a width and length of one as shown below:
+
+.. image:: img/array_mesh_rectangle_as_triangles.webp
+  :scale: 33%
+  :alt: A rectangle made of two triangles sharing four vertices.
+
+To draw this rectangle, define the coordinates of each vertex in the ``verts`` array.
+
+.. tabs::
+  .. code-tab:: gdscript GDScript
+
+    verts = PackedVector3Array([
+            Vector3(0, 0, 0),
+            Vector3(0, 0, 1),
+            Vector3(1, 0, 0),
+            Vector3(1, 0, 1),
+        ])
+
+  .. code-tab:: csharp C#
+
+    verts.AddRange(new Vector3[]
+    {
+        new Vector3(0, 0, 0),
+        new Vector3(0, 0, 1),
+        new Vector3(1, 0, 0),
+        new Vector3(1, 0, 1),
+    });
+
+The ``uvs`` array helps describe where parts of a texture should go onto the mesh. The values
+range from 0 to 1. Depending on your texture, you may want to change these values.
+
+.. tabs::
+  .. code-tab:: gdscript GDScript
+
+    uvs = PackedVector2Array([
+            Vector2(0, 0),
+            Vector2(1, 0),
+            Vector2(0, 1),
+            Vector2(1, 1),
+        ])
+
+  .. code-tab:: csharp C#
+
+    uvs.AddRange(new Vector2[]
+    {
+        new Vector2(0, 0),
+        new Vector2(1, 0),
+        new Vector2(0, 1),
+        new Vector2(1, 1),
+    });
+
+The ``normals`` array is used to describe the direction the vertices face and is
+used in lighting calculations. For this example, we will default to the ``Vector3.UP``
+direction.
+
+.. tabs::
+  .. code-tab:: gdscript GDScript
+
+    normals = PackedVector3Array([
+            Vector3.UP,
+            Vector3.UP,
+            Vector3.UP,
+            Vector3.UP,
+        ])
+
+  .. code-tab:: csharp C#
+
+    normals.AddRange(new Vector3[]
+    {
+        Vector3.Up,
+        Vector3.Up,
+        Vector3.Up,
+        Vector3.Up,
+    });
+
+The ``indices`` array defines the order vertices are drawn. Godot
+renders in a *clockwise* direction, meaning that we must specify the vertices
+of a triangle we want to draw in clockwise order.
+
+For example, to draw the first triangle, we will want to draw the vertices ``(0, 0, 0)``,
+``(1, 0, 0)``, and ``(0, 0, 1)`` in that order. This is the same as drawing ``vert[0]``, ``vert[2]``, and
+``vert[1]``, i.e., indices 0, 2, and 1, in the ``verts`` array. These index values are what the
+``indices`` array defines.
+
+.. list-table::
+   :header-rows: 1
+   :widths: auto
+
+   * - Index
+     - ``verts[Index]``
+     - ``uvs[Index]``
+     - ``normals[Index]``
+
+   * - 0
+     - (0, 0, 0)
+     - (0, 0)
+     - Vector3.UP
+
+   * - 1
+     - (0, 0, 1)
+     - (1, 0)
+     - Vector3.UP
+
+   * - 2
+     - (1, 0, 0)
+     - (0, 1)
+     - Vector3.UP
+
+   * - 3
+     - (1, 0, 1)
+     - (1, 1)
+     - Vector3.UP
+
+.. tabs::
+  .. code-tab:: gdscript GDScript
+
+    indices = PackedInt32Array([
+            0, 2, 1, # Draw the first triangle.
+            2, 3, 1, # Draw the second triangle.
+        ])
+
+  .. code-tab:: csharp C#
+
+    indices.AddRange(new int[]
+    {
+        0, 2, 1, // Draw the first triangle.
+        2, 3, 1, // Draw the second triangle.
+    });
+
+Put together, the rectangle generation code looks like:
+
+.. tabs::
+  .. code-tab:: gdscript GDScript
+
+    extends MeshInstance3D
+
+    func _ready():
+
+      # Insert setting up the PackedVector**Arrays here.
+
+      verts = PackedVector3Array([
+              Vector3(0, 0, 0),
+              Vector3(0, 0, 1),
+              Vector3(1, 0, 0),
+              Vector3(1, 0, 1),
+          ])
+
+      uvs = PackedVector2Array([
+              Vector2(0, 0),
+              Vector2(1, 0),
+              Vector2(0, 1),
+              Vector2(1, 1),
+          ])
+
+      normals = PackedVector3Array([
+              Vector3.UP,
+              Vector3.UP,
+              Vector3.UP,
+              Vector3.UP,
+          ])
+
+      indices = PackedInt32Array([
+              0, 2, 1,
+              2, 3, 1,
+          ])
+
+      # Insert committing to the ArrayMesh here.
+
+  .. code-tab:: csharp C#
+
+    using System.Collections.Generic;
+
+    public partial class MeshInstance3d : MeshInstance3D
+    {
+      public override void _Ready()
+      {
+          // Insert setting up the surface array and lists here.
+
+          verts.AddRange(new Vector3[]
+          {
+              new Vector3(0, 0, 0),
+              new Vector3(0, 0, 1),
+              new Vector3(1, 0, 0),
+              new Vector3(1, 0, 1),
+          });
+
+          uvs.AddRange(new Vector2[]
+          {
+              new Vector2(0, 0),
+              new Vector2(1, 0),
+              new Vector2(0, 1),
+              new Vector2(1, 1),
+          });
+
+          normals.AddRange(new Vector3[]
+          {
+              Vector3.Up,
+              Vector3.Up,
+              Vector3.Up,
+              Vector3.Up,
+          });
+
+          indices.AddRange(new int[]
+          {
+              0, 2, 1,
+              2, 3, 1,
+          });
+
+          // Insert committing to the ArrayMesh here.
+      }
+    }
+
+For a more complex example, see the sphere generation section below.
+
+Generating a sphere
 -------------------
 
 Here is sample code for generating a sphere. Although the code is presented in
@@ -265,7 +485,7 @@ that you find online.
             var y = cos(PI * v)
 
             # Loop over segments in ring.
-            for j in range(radial_segments):
+            for j in range(radial_segments + 1):
                 var u = float(j) / radial_segments
                 var x = sin(u * PI * 2.0)
                 var z = cos(u * PI * 2.0)
@@ -284,15 +504,6 @@ that you find online.
                     indices.append(prevrow + j)
                     indices.append(thisrow + j)
                     indices.append(thisrow + j - 1)
-
-            if i > 0:
-                indices.append(prevrow + radial_segments - 1)
-                indices.append(prevrow)
-                indices.append(thisrow + radial_segments - 1)
-
-                indices.append(prevrow)
-                indices.append(prevrow + radial_segments)
-                indices.append(thisrow + radial_segments - 1)
 
             prevrow = thisrow
             thisrow = point
@@ -324,7 +535,7 @@ that you find online.
                 var y = Mathf.Cos(Mathf.Pi * v);
 
                 // Loop over segments in ring.
-                for (var j = 0; j < _radialSegments; j++)
+                for (var j = 0; j < _radialSegments + 1; j++)
                 {
                     var u = ((float)j) / _radialSegments;
                     var x = Mathf.Sin(u * Mathf.Pi * 2);
@@ -346,17 +557,6 @@ that you find online.
                         indices.Add(thisRow + j);
                         indices.Add(thisRow + j - 1);
                     }
-                }
-
-                if (i > 0)
-                {
-                    indices.Add(prevRow + _radialSegments - 1);
-                    indices.Add(prevRow);
-                    indices.Add(thisRow + _radialSegments - 1);
-
-                    indices.Add(prevRow);
-                    indices.Add(prevRow + _radialSegments);
-                    indices.Add(thisRow + _radialSegments - 1);
                 }
 
                 prevRow = thisRow;

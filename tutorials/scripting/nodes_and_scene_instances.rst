@@ -6,6 +6,10 @@ Nodes and scene instances
 This guide explains how to get nodes, create nodes, add them as a child, and
 instantiate scenes from code.
 
+.. seealso::
+
+    Check the :ref:`doc_instancing` tutorial to learn about Godot's approach to scene instancing.
+
 Getting nodes
 -------------
 
@@ -128,7 +132,7 @@ script.
     var sprite2d
 
     func _ready():
-        var sprite2d = Sprite2D.new() # Create a new Sprite2D.
+        sprite2d = Sprite2D.new() # Create a new Sprite2D.
         add_child(sprite2d) # Add it as a child of this node.
 
  .. code-tab:: csharp
@@ -181,14 +185,14 @@ Scenes are templates from which you can create as many reproductions as you'd
 like. This operation is called instancing, and doing it from code happens in two
 steps:
 
-1. Loading the scene from the hard drive.
+1. Loading the scene from the local drive.
 2. Creating an instance of the loaded :ref:`PackedScene <class_PackedScene>`
    resource.
 
 .. tabs::
  .. code-tab:: gdscript GDScript
 
-    var scene = load("res://MyScene.tscn")
+    var scene = load("res://my_scene.tscn")
 
  .. code-tab:: csharp
 
@@ -201,7 +205,7 @@ only available with GDScript.
 .. tabs::
  .. code-tab:: gdscript GDScript
 
-    var scene = preload("res://MyScene.tscn")
+    var scene = preload("res://my_scene.tscn")
 
 At that point, ``scene`` is a packed scene resource, not a node. To create the
 actual node, you need to call :ref:`PackedScene.instantiate()

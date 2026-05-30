@@ -1,4 +1,4 @@
-:article_outdated: True
+:allow_comments: False
 
 iOS plugins
 ===========
@@ -8,4 +8,3 @@ iOS plugins
    :name: toc-tutorials-plugins-ios
 
    ios_plugin
-   plugins_for_ios

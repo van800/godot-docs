@@ -23,6 +23,10 @@ In this guide, you will learn:
           and collision shape has a direct equivalent in 3D and in most cases
           they work in much the same way.
 
+.. warning:: Physics in Godot, regardless of physics engine, is **not** deterministic,
+             the nature of physics engine determinism is very complex and has to do with many factors,
+             this means physics is not guaranteed to run the same way for seemingly identical situations.
+
 Collision objects
 -----------------
 
@@ -54,7 +58,7 @@ The last three listed below are physics bodies and additionally extend :ref:`Phy
 Physics material
 ~~~~~~~~~~~~~~~~
 
-Static bodies and rigid bodies can be configured to use a :ref:`physics material
+Static bodies and rigid bodies can be configured to use a :ref:`PhysicsMaterial
 <class_PhysicsMaterial>`. This allows adjusting the friction and bounce of an object,
 and set if it's absorbent and/or rough.
 
@@ -78,22 +82,22 @@ These nodes allow you to draw the shape directly in the editor workspace.
                 the ``Node2D`` scale handles. Scaling a shape can result in unexpected
                 collision behavior.
 
-.. image:: img/player_coll_shape.png
+.. image:: img/player_coll_shape.webp
 
 Physics process callback
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The physics engine runs at a fixed rate (a default of 60 iterations per second). This rate 
+The physics engine runs at a fixed rate (a default of 60 iterations per second). This rate
 is typically different from the frame rate which fluctuates based on what is rendered and
 available resources.
 
-It is important that all physics related code runs at this fixed rate. Therefore Godot 
+It is important that all physics related code runs at this fixed rate. Therefore Godot
 differentiates :ref:`between physics and idle processing <doc_idle_and_physics_processing>`.
-Code that runs each frame is called idle processing and code that runs on each physics 
-tick is called physics processing. Godot provides two different callbacks, one for each 
+Code that runs each frame is called idle processing and code that runs on each physics
+tick is called physics processing. Godot provides two different callbacks, one for each
 of those processing rates.
 
-The physics callback, :ref:`Node._physics_process() <class_Node_method__physics_process>`, 
+The physics callback, :ref:`Node._physics_process() <class_Node_private_method__physics_process>`,
 is called before each physics step. Any code that needs to access a body's properties should
 be run in here. This method will be passed a ``delta``
 parameter, which is a floating-point number equal to the time passed in
@@ -114,7 +118,7 @@ Collision layers and masks
 One of the most powerful, but frequently misunderstood, collision features
 is the collision layer system. This system allows you to build up complex
 interactions between a variety of objects. The key concepts are **layers**
-and **masks**. Each ``CollisionObject2D`` has 20 different physics layers
+and **masks**. Each ``CollisionObject2D`` has 32 different physics layers
 it can interact with.
 
 Let's look at each of the properties in turn:
@@ -132,9 +136,9 @@ These properties can be configured via code, or by editing them in the Inspector
 
 Keeping track of what you're using each layer for can be difficult, so you
 may find it useful to assign names to the layers you're using. Names can
-be assigned in Project Settings -> Layer Names.
+be assigned in **Project Settings > Layer Names > 2D Physics**.
 
-.. image:: img/physics_layer_names.png
+.. image:: img/physics_layer_names.webp
 
 GUI example
 ^^^^^^^^^^^
@@ -149,8 +153,8 @@ place each node type in its respective layer using the "Layer" property.
 Then set each node's "Mask" property by selecting the layers it should
 interact with. For example, the Player's settings would look like this:
 
-.. image:: img/player_collision_layers.png
-.. image:: img/player_collision_mask.png
+.. image:: img/player_collision_layers.webp
+.. image:: img/player_collision_mask.webp
 
 .. _doc_physics_introduction_collision_layer_code_example:
 
@@ -163,23 +167,52 @@ can use binary, hexadecimal, or decimal notation for layer masks, depending
 on your preference.
 
 The code equivalent of the above example where layers 1, 3 and 4 were enabled
-would be as follows::
+would be as follows:
+
+::
 
     # Example: Setting mask value for enabling layers 1, 3 and 4
 
     # Binary - set the bit corresponding to the layers you want to enable (1, 3, and 4) to 1, set all other bits to 0.
-    # Note: Layer 20 is the first bit, layer 1 is the last. The mask for layers 4,3 and 1 is therefore
-    0b00000000000000001101
+    # Note: Layer 32 is the first bit, layer 1 is the last. The mask for layers 4, 3 and 1 is therefore:
+    0b00000000_00000000_00000000_00001101
     # (This can be shortened to 0b1101)
 
-    # Hexadecimal equivalent (1101 binary converted to hexadecimal)
+    # Hexadecimal equivalent (1101 binary converted to hexadecimal).
     0x000d
-    # (This value can be shortened to 0xd)
+    # (This value can be shortened to 0xd.)
 
     # Decimal - Add the results of 2 to the power of (layer to be enabled - 1).
     # (2^(1-1)) + (2^(3-1)) + (2^(4-1)) = 1 + 4 + 8 = 13
-    pow(2, 1-1) + pow(2, 3-1) + pow(2, 4-1)
+    #
+    # We can use the `<<` operator to shift the bit to the left by the layer number we want to enable.
+    # This is a faster way to multiply by powers of 2 than `pow()`.
+    # Additionally, we use the `|` (binary OR) operator to combine the results of each layer.
+    # This ensures we don't add the same layer multiple times, which would behave incorrectly.
+    (1 << 1 - 1) | (1 << 3 - 1) | (1 << 4 - 1)
 
+    # The above can alternatively be written as:
+    # pow(2, 1 - 1) + pow(2, 3 - 1) + pow(2, 4 - 1)
+
+You can also set bits independently by calling ``set_collision_layer_value(layer_number, value)``
+or ``set_collision_mask_value(layer_number, value)`` on any given :ref:`CollisionObject2D <class_CollisionObject2D>` as follows:
+
+::
+
+    # Example: Setting mask value to enable layers 1, 3, and 4.
+
+    var collider: CollisionObject2D = $CollisionObject2D  # Any given collider.
+    collider.set_collision_mask_value(1, true)
+    collider.set_collision_mask_value(3, true)
+    collider.set_collision_mask_value(4, true)
+
+Export annotations can be used to export bitmasks in the editor with a user-friendly GUI:
+
+::
+
+    @export_flags_2d_physics var layers_2d_physics
+
+Additional export annotations are available for render and navigation layers, in both 2D and 3D. See :ref:`doc_gdscript_exports_exporting_bit_flags`.
 
 Area2D
 ------
@@ -229,7 +262,7 @@ You can modify a rigid body's behavior via properties such as "Mass",
 "Friction", or "Bounce", which can be set in the Inspector.
 
 The body's behavior is also affected by the world's properties, as set in
-`Project Settings -> Physics`, or by entering an :ref:`Area2D <class_Area2D>`
+**Project Settings > Physics**, or by entering an :ref:`Area2D <class_Area2D>`
 that is overriding the global physics properties.
 
 When a rigid body is at rest and hasn't moved for a while, it goes to sleep.
@@ -249,7 +282,7 @@ automatically be calculated by the physics engine.
 However, if you do wish to have some control over the body, you should take
 care - altering the ``position``, ``linear_velocity``, or other physics properties
 of a rigid body can result in unexpected behavior. If you need to alter any
-of the physics-related properties, you should use the :ref:`_integrate_forces() <class_RigidBody2D_method__integrate_forces>`
+of the physics-related properties, you should use the :ref:`_integrate_forces() <class_RigidBody2D_private_method__integrate_forces>`
 callback instead of ``_physics_process()``. In this callback, you have access
 to the body's :ref:`PhysicsDirectBodyState2D <class_PhysicsDirectBodyState2D>`,
 which allows for safely changing properties and synchronizing them with
@@ -286,19 +319,27 @@ For example, here is the code for an "Asteroids" style spaceship:
         private Vector2 _thrust = new Vector2(0, -250);
         private float _torque = 20000;
 
-        public override void _IntegrateForces(Physics2DDirectBodyState state)
+        public override void _IntegrateForces(PhysicsDirectBodyState2D state)
         {
             if (Input.IsActionPressed("ui_up"))
-                AppliedForce = _thrust.Rotated(Rotation);
+            {
+                state.ApplyForce(_thrust.Rotated(Rotation));
+            }
             else
-                AppliedForce = new Vector2();
+            {
+                state.ApplyForce(new Vector2());
+            }
 
             var rotationDir = 0;
             if (Input.IsActionPressed("ui_right"))
+            {
                 rotationDir += 1;
+            }
             if (Input.IsActionPressed("ui_left"))
+            {
                 rotationDir -= 1;
-            AppliedTorque = rotationDir * _torque;
+            }
+            state.ApplyTorque(rotationDir * _torque);
         }
     }
 
@@ -368,7 +409,7 @@ occurred:
     func _physics_process(delta):
         var collision_info = move_and_collide(velocity * delta)
         if collision_info:
-            var collision_point = collision_info.position
+            var collision_point = collision_info.get_position()
 
  .. code-tab:: csharp
 
@@ -378,9 +419,9 @@ occurred:
     {
         private Vector2 _velocity = new Vector2(250, 250);
 
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
-            var collisionInfo = MoveAndCollide(_velocity * delta);
+            var collisionInfo = MoveAndCollide(_velocity * (float)delta);
             if (collisionInfo != null)
             {
                 var collisionPoint = collisionInfo.GetPosition();
@@ -400,7 +441,7 @@ Or to bounce off of the colliding object:
     func _physics_process(delta):
         var collision_info = move_and_collide(velocity * delta)
         if collision_info:
-            velocity = velocity.bounce(collision_info.normal)
+            velocity = velocity.bounce(collision_info.get_normal())
 
  .. code-tab:: csharp
 
@@ -410,11 +451,13 @@ Or to bounce off of the colliding object:
     {
         private Vector2 _velocity = new Vector2(250, 250);
 
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
-            var collisionInfo = MoveAndCollide(_velocity * delta);
+            var collisionInfo = MoveAndCollide(_velocity * (float)delta);
             if (collisionInfo != null)
-                _velocity = _velocity.Bounce(collisionInfo.Normal);
+            {
+                _velocity = _velocity.Bounce(collisionInfo.GetNormal());
+            }
         }
     }
 
@@ -429,7 +472,9 @@ without writing much code.
 
 .. warning:: ``move_and_slide()`` automatically includes the timestep in its
              calculation, so you should **not** multiply the velocity vector
-             by ``delta``.
+             by ``delta``. This does **not** apply to ``gravity`` as it is an
+             acceleration and is time dependent, and needs to be scaled by
+             ``delta``.
 
 For example, use the following code to make a character that can walk along
 the ground (including slopes) and jump when standing on the ground:
@@ -473,23 +518,34 @@ the ground (including slopes) and jump when standing on the ground:
 
         private void GetInput()
         {
-            _velocity.x = 0;
+            var velocity = Velocity;
+            velocity.X = 0;
 
             var right = Input.IsActionPressed("ui_right");
             var left = Input.IsActionPressed("ui_left");
             var jump = Input.IsActionPressed("ui_select");
 
             if (IsOnFloor() && jump)
-                _velocity.y = _jumpSpeed;
+            {
+                velocity.Y = _jumpSpeed;
+            }
             if (right)
-                _velocity.x += _runSpeed;
+            {
+                velocity.X += _runSpeed;
+            }
             if (left)
-                _velocity.x -= _runSpeed;
+            {
+                velocity.X -= _runSpeed;
+            }
+
+            Velocity = velocity;
         }
 
-        public override void _PhysicsProcess(float delta)
+        public override void _PhysicsProcess(double delta)
         {
-            _velocity.y += _gravity * delta;
+            var velocity = Velocity;
+            velocity.Y += _gravity * (float)delta;
+            Velocity = velocity;
             GetInput();
             MoveAndSlide();
         }

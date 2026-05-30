@@ -61,21 +61,22 @@ real-time lighting. As many lights as desired can be added (as long as
 performance allows). However, there's still a default limit of 512 *clustered
 elements* that can be present in the current camera view. A clustered element is
 an omni light, a spot light, a :ref:`decal <doc_using_decals>` or a
-:ref:`reflection probe <doc_reflection_probes>`. This limit can be increased by
-adjusting the **Rendering > Limits > Cluster Builder > Max Clustered Elements**
-advanced project setting.
+:ref:`reflection probe <doc_reflection_probes>`. This limit can be increased by adjusting
+:ref:`Max Clustered Elements<class_ProjectSettings_property_rendering/limits/cluster_builder/max_clustered_elements>`
+in **Project Settings > Rendering > Limits > Cluster Builder**.
 
-When using the Forward Mobile renderer, there is a limitation of 8 OmniLights +
-8 SpotLights per mesh resource. There is also a limit of 256 OmniLights + 256
-SpotLights that can be rendered in the current camera view. These limits
-currently cannot be changed.
+When using the Mobile renderer, there is a limitation of 8 OmniLights + 8 SpotLights
+per mesh resource. There is also a limit of 256 OmniLights + 256 SpotLights that
+can be rendered in the current camera view. These limits currently cannot be changed.
 
 When using the Compatibility renderer, up to 8 OmniLights + 8 SpotLights can be
 rendered per mesh resource. This limit can be increased in the advanced Project
-Settings by adjusting **Rendering > Limits > OpenGL > Max Renderable Lights**
-and/or **Rendering > Limits > OpenGL > Max Lights Per Object** at the cost of
-performance and longer shader compilation times. The limit can also be decreased
-to reduce shader compilation times and improve performance slightly.
+Settings by adjusting
+:ref:`Max Renderable Elements<class_ProjectSettings_property_rendering/limits/opengl/max_renderable_elements>`
+and/or :ref:`Max Lights per Object<class_ProjectSettings_property_rendering/limits/opengl/max_lights_per_object>`
+in **Rendering > Limits > OpenGL**, at the cost of performance and longer shader
+compilation times. The limit can also be decreased to reduce shader compilation
+times and improve performance slightly.
 
 With all rendering methods, up to 8 DirectionalLights can be visible at a time.
 However, each additional DirectionalLight with shadows enabled will reduce the
@@ -88,7 +89,7 @@ nodes can help reduce this issue while also improving performance. Splitting
 your meshes into smaller portions can also help, especially for level geometry
 (which also improves culling efficiency).
 
-If you need to render more lights than possible in a given rendering backend,
+If you need to render more lights than possible in a given renderer,
 consider using :ref:`baked lightmaps <doc_using_lightmap_gi>` with lights' bake
 mode set to **Static**. This allows lights to be fully baked, which also makes
 them much faster to render. You can also use emissive materials with any
@@ -96,7 +97,7 @@ them much faster to render. You can also use emissive materials with any
 as a replacement for light nodes that emit light over a large area.
 
 Shadow mapping
-^^^^^^^^^^^^^^
+--------------
 
 Lights can optionally cast shadows. This gives them greater realism (light does
 not reach occluded areas), but it can incur a bigger performance cost.
@@ -123,6 +124,13 @@ There is a list of generic shadow parameters, each also has a specific function:
   moving objects. The downside of increasing shadow blur is that it will make
   the grainy pattern used for filtering more noticeable.
   See also :ref:`doc_lights_and_shadows_shadow_filter_mode`.
+- **Caster Mask:** Shadows are only cast by objects in these layers. Note that
+  this mask does not affect which objects shadows are cast *onto*.
+
+.. image:: img/lights_and_shadows_blur.webp
+
+Tweaking shadow bias
+~~~~~~~~~~~~~~~~~~~~
 
 Below is an image of what tweaking bias looks like. Default values work for most
 cases, but in general, it depends on the size and complexity of geometry.
@@ -141,7 +149,7 @@ object. This is called *peter-panning*:
 
 In general, increasing **Shadow Normal Bias** is preferred over increasing
 **Shadow Bias**. Increasing **Shadow Normal Bias** does not cause as much
-peter-panning as increasing **Shadow Normal Bias**, but it can still resolve
+peter-panning as increasing **Shadow Bias**, but it can still resolve
 most shadow acne issues efficiently. The downside of increasing **Shadow Normal
 Bias** is that it can make shadows appear thinner for certain objects.
 
@@ -154,6 +162,13 @@ at the cost of decreased performance.
     Tweaking shadow mapping settings is an art – there are no "one size fits
     all" settings. To achieve the best visuals, you may need to use different
     shadow bias values on a per-light basis.
+
+**Note on Appearance Changes**: When enabling shadows on a light, be aware that the light's
+appearance might change compared to when it's rendered without shadows in the compatibility
+renderer. Due to limitations with older mobile devices, shadows are implemented using a multi-pass
+rendering approach so lights with shadows are rendered in sRGB space instead of linear space.
+This change in rendering space can sometimes drastically alter the light's appearance. To achieve a similar
+appearance to an unshadowed light, you may need to adjust the light's energy setting.
 
 Directional light
 -----------------
@@ -171,10 +186,10 @@ does not affect the lighting at all and can be anywhere.
 .. image:: img/light_directional.png
 
 Every face whose front-side is hit by the light rays is lit, while the others
-stay dark. Unlike most other light types directional lights, don't have specific
+stay dark. Unlike most other light types, directional lights don't have specific
 parameters.
 
-The directional light also offers a **Angular Distance** property, which
+The directional light also offers an **Angular Distance** property, which
 determines the light's angular size in degrees. Increasing this above ``0.0``
 will make shadows softer at greater distances from the caster, while also
 affecting the sun's appearance in procedural sky materials. This is called a
@@ -186,7 +201,7 @@ recommendations in :ref:`doc_lights_and_shadows_pcss_recommendations` if setting
 this value above ``0.0`` on lights with shadows enabled.
 
 Directional shadow mapping
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To compute shadow maps, the scene is rendered (only depth) from an orthogonal
 point of view that covers the whole scene (or up to the max distance). There is,
@@ -196,7 +211,12 @@ receive low-resolution shadows that may appear blocky.
 To fix this, a technique named *Parallel Split Shadow Maps* (PSSM) is used.
 This splits the view frustum in 2 or 4 areas. Each area gets its own shadow map.
 This allows small areas close to the viewer to have the same shadow resolution
-as a huge, far-away area.
+as a huge, far-away area. When shadows are enabled for DirectionalLight3D, the
+default shadow mode is PSSM with 4 splits. In scenarios where an object is large
+enough to appear in all four splits, it results in increased draw calls. Specifically,
+such an object will be rendered five times in total: once for each of the four shadow
+splits and once for the final scene rendering. This can impact performance, understanding
+this behavior is important for optimizing your scene and managing performance expectations.
 
 .. image:: img/lights_and_shadows_pssm_explained.webp
 
@@ -267,16 +287,18 @@ expensive, so check the recommendations in
 :ref:`doc_lights_and_shadows_pcss_recommendations` if setting this value above
 ``0.0`` on lights with shadows enabled.
 
+.. image:: img/lights_and_shadows_pcss.webp
+
 Omni shadow mapping
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 Omni light shadow mapping is relatively straightforward. The main issue that
 needs to be considered is the algorithm used to render it.
 
 Omni Shadows can be rendered as either **Dual Paraboloid** or **Cube** mapped.
-**Dual Parabolid** renders quickly, but can cause deformations, while **Cube**
+**Dual Paraboloid** renders quickly, but can cause deformations, while **Cube**
 is more correct, but slower. The default is **Cube**, but consider changing it
-to **Dual Parabolid** for lights where it doesn't make much of a visual
+to **Dual Paraboloid** for lights where it doesn't make much of a visual
 difference.
 
 .. image:: img/lights_and_shadows_dual_parabolid_vs_cubemap.webp
@@ -321,12 +343,12 @@ and add two extra parameters:
 - **Angle Attenuation:** The cone attenuation, which helps soften the cone borders.
 
 Spot shadow mapping
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 Spots feature the same parameters as omni lights for shadow mapping. Rendering
 spot shadow maps is significantly faster compared to omni lights, as only one
 shadow texture needs to be rendered (instead of rendering 6 faces, or 2 in dual
-parabolid mode).
+paraboloid mode).
 
 Spot lights with shadows enabled can make use of projectors. The projector
 texture will *multiply* the light's color by the color at a given point on the
@@ -350,6 +372,93 @@ With the projector texture below, the following result is obtained:
     surface. At angles wider than 89 degrees, spot light shadows will stop
     working entirely. If you need shadows for wider lights, use an omni light
     instead.
+
+Area light
+----------
+
+Sometimes, you want lighting to come from a large area instead of a single
+point. Area lights are useful for simulating soft, diffuse lighting, such as
+light coming from a window or a lit billboard. This type of light is expensive
+to render in real-time, so it should be used sparingly, especially when shadows
+are enabled.
+
+Godot provides the :ref:`class_AreaLight3D` node for this purpose, which emits
+light from a rectangular area. The node only emits light and has no other visual
+representation in the scene. The screenshots below use a :ref:`class_Sprite3D`
+node as a child of the area light for visualization purposes.
+
+Area lights can also cast shadows, with variable penumbra simulated using
+:ref:`PCSS <doc_lights_and_shadows_pcss_recommendations>` by default. The size
+of this penumbra can be controlled with the Light3D **Size** property. This
+effect can be quite demanding, so it can be turned off by setting **Size** to
+``0.0``.
+
+.. note::
+
+    Shadows cast by an area light may look incorrect if the object casting shadows
+    doesn't have enough subdivisions and it's very close to the area light.
+    This is the same limitation as Dual Paraboloid shadow mode on an omni light.
+
+.. image:: img/lights_and_shadows_area_example.webp
+
+.. note::
+
+    Since area lights are difficult to simulate in a real-time rasterized
+    renderer, they come with a number of limitations.
+
+    For small light sources, you will likely get better results when using point
+    lights. Shadows from area lights are crude approximations, as they are
+    calculated as if they were point lights, and may appear to be distorted at
+    the edges. To get a better result, make sure the meshes in the light's range
+    are sufficiently subdivided.
+
+    Area lights suffer from light leaking on the backside of geometry closely in
+    front of them at grazing angles, so be careful with where you place them.
+
+    Lastly, not all material features are fully supported; area lights are
+    practically limited to Lambertian diffuse and GGX specular shading, while
+    anisotropic materials will appear as if isotropic. Vertex shading is also
+    not implemented for area lights.
+
+Area lights emit light in a rectangular area defined by the **Area > Size**
+property (not to be confused with the generic Light3D **Size** property). To get
+a physically accurate result, you should resize this area to match the size of
+the real-life light source you are trying to simulate. For example, if you are
+simulating a 1-meter neon tube that is 10 centimeters wide, set the area
+size to ``(1, 0.1)`` and adjust the energy accordingly.
+
+By default, the light's energy is normalized: the larger the area, the weaker
+the light. This allows you to change the area size without needing to adjust the
+energy to compensate, which is useful for animation. You can disable this
+behavior by unchecking **Area > Normalize Energy** if you want the energy to be
+independent of the area size.
+
+The rectangular area can optionally be textured. This can be effectively used to
+change the light's shape into any 2D shape, or tint it in different colors. The
+texture's alpha channel is treated as black (no light coming through). The area
+light's texture will be visible in reflections according to the surface's
+roughness. This behavior is different from omni/spot projectors, as it does not
+project the texture directly onto all diffuse lighting.
+
+When using a textures that are transparent or black toward the edges, you might
+want to leave a gap of a few pixels to make sure the texture is blurred
+smoothly.
+
+.. image:: img/lights_and_shadows_area_texture.webp
+
+.. note::
+
+    Changing the area light's texture at runtime can be expensive, especially if
+    the texture is large.
+
+    To reduce the performance impact of switching textures at runtime, make sure
+    each dimension of an area texture is either a multiple of 128 pixels, or a
+    power of two. This removes the need for a scaling pass, which slows down
+    texture changes. The textures don't necessarily have to be square to be
+    optimal. Examples of optimal texture sizes include 32×64, 128×128, and
+    256×384.
+
+    Textured area lights are not supported in the Compatibility renderer.
 
 .. _doc_lights_and_shadows_shadow_atlas:
 
@@ -410,14 +519,14 @@ Balancing performance and quality
 Shadow rendering is a critical topic in 3D rendering performance. It's important
 to make the right choices here to avoid creating bottlenecks.
 
-Directional shadow quality settings can be changed at run-time by calling the
+Directional shadow quality settings can be changed at runtime by calling the
 appropriate :ref:`class_RenderingServer` methods.
 
-Positional (omni/spot) shadow quality settings can be changed at run-time on the
+Positional (omni/spot) shadow quality settings can be changed at runtime on the
 root :ref:`class_Viewport`.
 
 Shadow map size
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 High shadow resolutions result in sharper shadows, but at a significant
 performance cost. It should also be noted that *sharper shadows are not always
@@ -432,7 +541,7 @@ fewer shadows. This will allow each shadow to be rendered at a higher resolution
 .. _doc_lights_and_shadows_shadow_filter_mode:
 
 Shadow filter mode
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 Several shadow map quality settings can be chosen here. The default **Soft Low**
 is a good balance between performance and quality for scenes with detailed
@@ -440,16 +549,19 @@ textures, as the texture detail will help make the dithering pattern less notice
 
 However, in projects with less detailed textures, the shadow dithering pattern
 may be more visible. To hide this pattern, you can either enable
-:ref:`doc_3d_antialiasing_taa`, :ref:`doc_3d_antialiasing_fxaa`, or increase the
-shadow filter quality to **Soft Medium** or higher.
+:ref:`doc_3d_antialiasing_taa`, :ref:`doc_3d_antialiasing_fsr2`,
+:ref:`doc_3d_antialiasing_fxaa`, or increase the shadow filter quality to
+**Soft Medium** or higher.
 
 The **Soft Very Low** setting will automatically decrease shadow blur to make
 artifacts from the low sample count less visible. Conversely, the **Soft High**
 and **Soft Ultra** settings will automatically increase shadow blur to better
 make use of the increased sample count.
 
+.. image:: img/lights_and_shadows_filter_quality.webp
+
 16-bits versus 32-bit
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 By default, Godot uses 16-bit depth textures for shadow map rendering. This is
 recommended in most cases as it performs better without a noticeable difference
@@ -461,7 +573,7 @@ enabled. However, the difference is often barely visible, yet this can have a
 significant performance cost.
 
 Light/shadow distance fade
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 OmniLight3D and SpotLight3D offer several properties to hide distant lights.
 This can improve performance significantly in large scenes with dozens of lights
@@ -484,7 +596,7 @@ or more.
 .. _doc_lights_and_shadows_pcss_recommendations:
 
 PCSS recommendations
-^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~
 
 Percentage-closer soft shadows (PCSS) provide a more realistic shadow mapping
 appearance, with the penumbra size varying depending on the distance between the
@@ -504,7 +616,7 @@ To avoid performance issues, it's recommended to:
   ``light_size`` property to ``0.0`` in a script.
 
 Projector filter mode
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 The way projectors are rendered also has an impact on performance. The
 **Rendering > Textures > Light Projectors > Filter** advanced project setting
@@ -513,7 +625,7 @@ not use mipmaps, which makes them faster to render. However, projectors will
 look grainy at distance. **Nearest/Linear Mipmaps** will look smoother at a
 distance, but projectors will look blurry when viewed from oblique angles. This
 can be resolved by using **Nearest/Linear Mipmaps Anisotropic**, which is the
-highest-quality mode but also the most expensive.
+highest-quality mode, but also the most expensive.
 
 If your project has a pixel art style, consider setting the filter to one of the
 **Nearest** values so that projectors use nearest-neighbor filtering. Otherwise,

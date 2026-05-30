@@ -9,8 +9,8 @@ it's best used when targeting dedicated graphics cards.
 
 .. important::
 
-    VoxelGI is only supported when using the Forward Plus rendering backend,
-    not the Forward Mobile or Compatibility backends.
+    VoxelGI is only supported when using the Forward+ renderer, not the Mobile or
+    Compatibility renderers.
 
 .. seealso::
 
@@ -81,7 +81,7 @@ contained within a VoxelGI node after it has been baked:
   If in doubt, leave this unchanged.
 - **Energy:** The indirect lighting's overall energy. This also effects the energy
   of direct lighting emitted by meshes with emissive materials.
-- **Bias:** Optional bias added to lookups into the voxel buffer at run time.
+- **Bias:** Optional bias added to lookups into the voxel buffer at runtime.
   This helps avoid self-occlusion artifacts.
 - **Normal Bias:** Similar to **Bias**, but offsets the lookup into the voxel buffer
   by the surface normal. This also helps avoid self-occlusion artifacts. Higher
@@ -120,6 +120,23 @@ There are 3 global illumination modes available for meshes:
   still receive *and* contribute indirect lighting to the scene in real-time.
   This option is much slower compared to **Static**. Only use the **Dynamic**
   global illumination mode on large meshes that will change significantly during gameplay.
+
+.. note::
+
+    For meshes with the **Static** bake mode, the VoxelGI baking system is not able
+    to make use of custom shaders (:ref:`class_ShaderMaterial`). These meshes will be
+    considered to be pure black, only acting as light blockers. You can make
+    VoxelGI take custom shaders into account by using the **Dynamic** bake mode
+    for these objects, but this has a performance cost.
+
+    For :ref:`class_BaseMaterial3D`, some properties are currently ignored during baking.
+    This can impact visuals if the material's albedo or emission texture was designed
+    around using certain UV mappings:
+
+    - **UV1 > Offset**
+    - **UV1 > Scale**
+    - **UV1 > Triplanar**
+    - **Emission > On UV2**
 
 Additionally, there are 3 bake modes available for lights
 (DirectionalLight3D, OmniLight3D and SpotLight3D):
@@ -193,3 +210,14 @@ in your level geometry. This can be remedied in several ways:
 - To combat artifacts that can appear on reflective surfaces, try increasing
   **Bias** and/or **Normal Bias** in the VoxelGIData resource as described above.
   Do not increase these values too high, or light leaking will become more pronounced.
+
+If you notice VoxelGI nodes popping in and out of existence as the camera moves,
+this is most likely because the engine is rendering too many VoxelGI instances
+at once. Godot is limited to rendering 8 VoxelGI nodes at once, which means up
+to 8 instances can be in the camera view before some of them will start
+flickering.
+
+Additionally, for performance reasons, Godot can only blend between 2 VoxelGI
+nodes at a given pixel on the screen. If you have more than 2 VoxelGI nodes
+overlapping, global illumination may appear to flicker as the camera moves or
+rotates.

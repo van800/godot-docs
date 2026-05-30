@@ -7,7 +7,7 @@ Optimizing Navigation Performance
 
 Common Navigation related performance problems can be categorized into the following topics:
 
-- Performance problems with parsing SceneTree nodes for navigation mesh baking.
+- Performance problems with parsing scene tree nodes for navigation mesh baking.
 - Performance problems with baking the actual navigation mesh.
 - Performance problems with NavigationAgent path queries.
 - Performance problems with the actual path search.
@@ -15,8 +15,8 @@ Common Navigation related performance problems can be categorized into the follo
 
 In the following sections information can be found on how to identify and fix or at least mitigate their impact on framerates.
 
-Performance problems with parsing SceneTree nodes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Performance problems with parsing scene tree nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. tip::
 
@@ -50,10 +50,10 @@ Performance problems with navigation mesh baking
 
 Baking navigation meshes at runtime should always be done in a background thread if possible. Even small sized navigation meshes can take far longer to bake than what is possible to squeeze into a single frame, at least if the framerate should stay at a bearable level.
 
-Complexity of source geometry data parsed from SceneTree nodes has big impact on baking performance as everything needs to be mapped to a grid / voxels.
+Complexity of source geometry data parsed from scene tree nodes has big impact on baking performance as everything needs to be mapped to a grid / voxels.
 For runtime baking performance the NavigationMesh cell size and cell height should be set as high as possible without causing navigation mesh quality problems for a game.
 If cell size or cell height is set too low the baking is forced to create an excessive amount of voxels to process the source geometry.
-If the source geometry spans over a very large game world it is even possible that the baking process runs out off memory in the middle and crashes the game.
+If the source geometry spans over a very large game world it is even possible that the baking process runs out of memory in the middle and crashes the game.
 The partition type can also be lowered depending on how complex the games source geometry is to gain some performance.
 E.g. games with mostly flat surfaces with blocky geometry can get away with the monotone or layers mode that are a lot faster to bake (e.g. because they require no distance field pass).
 
@@ -98,14 +98,14 @@ This performance drop is "normal" and the result of a too large, too unoptimized
 In normal path searches where the target position can be reached quickly the pathfinding will do an early exit as soon as the position is reached which can hide this lack of optimization for a while.
 If the target position can not be reached the pathfinding has to do a far longer search through the available polygons to confirm that the position is absolutely not reachable.
 
-Performance problems with navigation map synchronisation
+Performance problems with navigation map synchronization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. tip::
 
     Merge navigation meshes polygons by vertex instead of by edge connection wherever possible.
 
-When changes are made to e.g. navigation meshes or navigation regions, the NavigationServer needs to synchronise the navigation map.
+When changes are made to e.g. navigation meshes or navigation regions, the NavigationServer needs to synchronize the navigation map.
 Depending on the complexity of navigation meshes, this can take a significant amount of time which may impact the framerate.
 
 The NavigationServer merges navigation meshes either by vertex or by edge connection.

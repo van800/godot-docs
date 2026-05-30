@@ -1,4 +1,6 @@
-:article_outdated: True
+:allow_comments: False
+
+.. _doc_editor_introduction:
 
 Editor introduction
 ===================
@@ -10,7 +12,7 @@ Editor's interface
 ------------------
 
 The following pages explain how to use the various windows, workspaces, and
-docks that make up the Godot editor. We cover some specific editors' interface
+docks that make up the Godot editor. We cover some specific editors' interfaces
 in other sections where appropriate. For example, the :ref:`animation editor
 <doc_introduction_animation>`.
 
@@ -21,8 +23,37 @@ in other sections where appropriate. For example, the :ref:`animation editor
    project_manager
    inspector_dock
    project_settings
+   script_editor
    default_key_mapping
    customizing_editor
+   game_embedding
+
+XR editor
+---------
+
+Godot offers a port of the editor designed to run natively on Meta Quest devices.
+The port can be downloaded from the `Meta Horizon Store <https://www.meta.com/experiences/godot-game-engine/7713660705416473/>`__,
+or from the `Godot download page <https://godotengine.org/download/preview/>`__.
+
+.. toctree::
+   :maxdepth: 1
+   :name: toc-xr-editor
+
+   using_the_xr_editor
+
+Android editor
+--------------
+
+Godot offers a native port of the editor running entirely on Android devices.
+The Android port can be downloaded from the `Android Downloads page <https://godotengine.org/download/android/>`__.
+While we strive for feature parity with the Desktop version of the editor,
+the Android port has a certain amount of caveats you should be aware of.
+
+.. toctree::
+   :maxdepth: 1
+   :name: toc-android-editor
+
+   using_the_android_editor
 
 Web editor
 ----------
@@ -50,6 +81,7 @@ like Visual Studio Code or Emacs.
 
    command_line_tutorial
    external_editor
+   using_engine_compilation_configuration_editor
 
 Managing editor features
 ------------------------
